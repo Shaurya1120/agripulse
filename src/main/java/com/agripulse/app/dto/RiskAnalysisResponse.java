@@ -43,6 +43,7 @@ public class RiskAnalysisResponse {
     private BigDecimal farmAreaAcres;
     private Integer planningHorizonDays;
     private BigDecimal estimatedLossInr;
+    private String verifiedWeatherContext;
 
     public static RiskAnalysisResponse fromEntity(RiskReport riskReport) {
         RiskAnalysisResponse response = new RiskAnalysisResponse();

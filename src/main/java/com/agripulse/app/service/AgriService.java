@@ -67,6 +67,7 @@ public class AgriService {
     private final EmergencyAlertTool emergencyAlertTool;
     private final MandiPriceService mandiPriceService;
     private final UserAccountService userAccountService;
+    private final WeatherLookupService weatherLookupService;
 
     public RiskAnalysisResponse analyzeRisk(RiskAnalysisRequest request, String userEmail) {
         if (request == null) {
@@ -75,7 +76,8 @@ public class AgriService {
 
         try {
             UserAccount userAccount = userAccountService.getRequiredUser(userEmail);
-            WeatherEvidence weatherEvidence = buildWeatherEvidence(request);
+            String resolvedWeatherContext = weatherLookupService.resolveWeatherContext(request.getRegion(), request.getWeatherContext());
+            WeatherEvidence weatherEvidence = buildWeatherEvidence(request, resolvedWeatherContext);
             String stakeholderType = normalizeStakeholderType(request);
             MandiPriceService.MarketEvidence marketEvidence = mandiPriceService.findMarketEvidence(
                     request.getCropName(),
@@ -142,7 +144,7 @@ public class AgriService {
                             .param("cropRatePerKgInr", safeNumber(request.getCropRatePerKgInr()))
                             .param("farmAreaAcres", safeNumber(request.getFarmAreaAcres()))
                             .param("planningHorizonDays", request.getPlanningHorizonDays() == null ? "Not provided" : request.getPlanningHorizonDays())
-                            .param("weatherContext", StringUtils.hasText(request.getWeatherContext()) ? request.getWeatherContext() : "Not provided")
+                            .param("weatherContext", StringUtils.hasText(resolvedWeatherContext) ? resolvedWeatherContext : "Not provided")
                             .param("verifiedRiskLevel", weatherEvidence.riskLevel())
                             .param("verifiedPrimaryThreat", weatherEvidence.primaryThreat())
                             .param("verifiedSummary", weatherEvidence.disruptionSummary())
@@ -156,7 +158,7 @@ public class AgriService {
                     .entity(AiRiskAssessment.class);
 
             String normalizedRiskLevel = normalizeRiskLevel(aiRiskAssessment);
-            String adjustedRiskLevel = determineFinalRiskLevel(normalizedRiskLevel, request, aiRiskAssessment, weatherEvidence, marketEvidence);
+            String adjustedRiskLevel = determineFinalRiskLevel(normalizedRiskLevel, resolvedWeatherContext, aiRiskAssessment, weatherEvidence, marketEvidence);
 
             RiskReport riskReport = new RiskReport();
             riskReport.setCropName(request.getCropName().trim());
@@ -203,7 +205,8 @@ public class AgriService {
                     request.getCropRatePerKgInr(),
                     request.getFarmAreaAcres(),
                     request.getPlanningHorizonDays(),
-                    recalculateLossFromEvidence(request, aiRiskAssessment, weatherEvidence, marketEvidence)
+                    recalculateLossFromEvidence(request, aiRiskAssessment, weatherEvidence, marketEvidence),
+                    resolvedWeatherContext
             );
         }
         catch (NonTransientAiException exception) {
@@ -270,16 +273,15 @@ public class AgriService {
         return aiRiskAssessment.getMitigationStrategy().trim();
     }
 
-    private WeatherEvidence buildWeatherEvidence(RiskAnalysisRequest request) {
-        String weatherContext = request == null ? "" : defaultText(request.getWeatherContext(), "");
+    private WeatherEvidence buildWeatherEvidence(RiskAnalysisRequest request, String weatherContext) {
         if (!StringUtils.hasText(weatherContext) || weatherContext.toLowerCase(Locale.ROOT).contains("weather unavailable")) {
             return new WeatherEvidence(
                     false,
                     "Low",
-                    "Limited live weather confirmation",
-                    "Live weather data is unavailable, so this report should be treated as a lower-confidence operational snapshot.",
-                    "Live weather data is unavailable for this exact place, so this report should be treated with caution.",
-                    List.of("Live weather data unavailable"),
+                    "Location weather could not be verified",
+                    "AgriPulse could not verify live weather for the typed location yet, so this report should be treated as a lower-confidence operational snapshot.",
+                    "Live weather data could not be verified for this place. Use a district, city, or state format such as 'Muzaffarnagar, Uttar Pradesh' for a stronger confirmed report.",
+                    List.of("Live weather verification unavailable"),
                     5,
                     3,
                     4
@@ -315,12 +317,11 @@ public class AgriService {
         );
     }
 
-    private String adjustRiskLevelForLiveSignals(String normalizedRiskLevel, RiskAnalysisRequest request, AiRiskAssessment aiRiskAssessment) {
+    private String adjustRiskLevelForLiveSignals(String normalizedRiskLevel, String weatherContext, AiRiskAssessment aiRiskAssessment) {
         if (!StringUtils.hasText(normalizedRiskLevel)) {
             return "Medium";
         }
 
-        String weatherContext = request == null ? "" : defaultText(request.getWeatherContext(), "");
         String aiContext = String.join(" ",
                 defaultText(aiRiskAssessment.getDisruptionSummary(), ""),
                 defaultText(aiRiskAssessment.getPrimaryThreat(), ""),
@@ -360,13 +361,13 @@ public class AgriService {
 
     private String determineFinalRiskLevel(
             String normalizedRiskLevel,
-            RiskAnalysisRequest request,
+            String weatherContext,
             AiRiskAssessment aiRiskAssessment,
             WeatherEvidence weatherEvidence,
             MandiPriceService.MarketEvidence marketEvidence) {
         String weatherAdjusted = weatherEvidence.liveEvidenceAvailable()
                 ? weatherEvidence.riskLevel()
-                : adjustRiskLevelForLiveSignals(normalizedRiskLevel, request, aiRiskAssessment);
+                : adjustRiskLevelForLiveSignals(normalizedRiskLevel, weatherContext, aiRiskAssessment);
 
         if (!marketEvidence.available()) {
             return weatherAdjusted;

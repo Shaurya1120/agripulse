@@ -893,6 +893,15 @@
         storage: '/images/photos/grain-silos.jpg',
         coffee: '/images/photos/coffee-beans.jpg'
     };
+    const indianRegionSuffixes = [
+        'andaman and nicobar islands', 'arunachal pradesh', 'andhra pradesh', 'assam',
+        'bihar', 'chandigarh', 'chhattisgarh', 'dadra and nagar haveli and daman and diu',
+        'delhi', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jammu and kashmir',
+        'jharkhand', 'karnataka', 'kerala', 'ladakh', 'lakshadweep', 'madhya pradesh',
+        'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha',
+        'puducherry', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana',
+        'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal'
+    ];
 
     const riskLevelPriority = { 'Very High': 5, High: 4, Medium: 3, Low: 2, 'No Risk': 1 };
     const aboutGalleryItems = [
@@ -1373,6 +1382,7 @@
 
     function updateLatestResult(data, payload) {
         latestReportContext = { response: data, request: payload };
+        applyWeatherContext(data.verifiedWeatherContext || payload.weatherContext);
         if ((data.stakeholderType || '').toLowerCase() === 'farmer') {
             updateFarmerResult(data, payload);
             return;
@@ -1380,6 +1390,66 @@
         updateEnterpriseResult(data);
         currentLossInr.textContent = formatCurrency(data.estimatedLossInr);
         currentStakeholder.textContent = data.stakeholderType || 'Enterprise';
+    }
+
+    function titleCaseWords(value) {
+        return value
+            .split(/\s+/)
+            .filter(Boolean)
+            .map(token => token.charAt(0).toUpperCase() + token.slice(1).toLowerCase())
+            .join(' ');
+    }
+
+    function buildLocationVariants(region) {
+        const cleaned = region.trim().replace(/\s+/g, ' ');
+        const variants = new Set([cleaned]);
+        const normalized = cleaned.toLowerCase();
+        const matchedState = [...indianRegionSuffixes].sort((left, right) => right.length - left.length)
+            .find(state => normalized.endsWith(state));
+
+        if (matchedState) {
+            const locality = cleaned.slice(0, cleaned.length - matchedState.length).trim().replace(/[,\s]+$/g, '');
+            const formatted = locality ? `${titleCaseWords(locality)}, ${titleCaseWords(matchedState)}` : titleCaseWords(matchedState);
+            variants.add(formatted);
+            variants.add(`${formatted}, India`);
+        }
+
+        if (!/india/i.test(cleaned)) {
+            variants.add(`${cleaned}, India`);
+        }
+
+        if (!cleaned.includes(',')) {
+            variants.add(titleCaseWords(cleaned));
+        }
+
+        return [...variants].filter(Boolean);
+    }
+
+    function pickBestGeocodeResult(results, originalQuery) {
+        if (!results || !results.length) {
+            return null;
+        }
+
+        const tokens = originalQuery.toLowerCase().split(/[,\s]+/).filter(token => token.length >= 3);
+        return [...results].sort((left, right) => {
+            const leftHaystack = `${left.name || ''} ${left.admin1 || ''} ${left.country || ''}`.toLowerCase();
+            const rightHaystack = `${right.name || ''} ${right.admin1 || ''} ${right.country || ''}`.toLowerCase();
+            const leftScore = tokens.filter(token => leftHaystack.includes(token)).length + ((left.country_code || '') === 'IN' ? 4 : 0);
+            const rightScore = tokens.filter(token => rightHaystack.includes(token)).length + ((right.country_code || '') === 'IN' ? 4 : 0);
+            return rightScore - leftScore;
+        })[0];
+    }
+
+    function applyWeatherContext(context) {
+        if (!context || context.toLowerCase().includes('weather unavailable')) {
+            return;
+        }
+
+        const parts = context.split('|').map(part => part.trim()).filter(Boolean);
+        weatherRegion.textContent = parts[0] || 'Matched location';
+        weatherTemperature.textContent = parts[1] || '--';
+        weatherWind.textContent = parts.slice(2).join(' | ') || 'Forecast details loaded.';
+        weatherSummary.textContent = 'Live weather verified for the matched location.';
     }
 
     async function fetchWeather(region) {
@@ -1397,25 +1467,32 @@
         weatherWind.textContent = 'Forecast details loading...';
 
         try {
-            const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(region)}&count=1&language=en&format=json`);
-            const geoData = await geoResponse.json();
-            const location = geoData.results?.[0];
-            if (!location) {
-                throw new Error('Location not found in the weather service.');
+            for (const variant of buildLocationVariants(region)) {
+                const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(variant)}&count=5&language=en&format=json&countryCode=IN`);
+                const geoData = await geoResponse.json();
+                const location = pickBestGeocodeResult(geoData.results || [], region);
+                if (!location) {
+                    continue;
+                }
+
+                const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
+                const weatherData = await weatherResponse.json();
+                const current = weatherData.current;
+                if (!current) {
+                    continue;
+                }
+
+                weatherRegion.textContent = [location.name, location.admin1, location.country].filter(Boolean).join(', ');
+                weatherSummary.textContent = 'Live weather verified for the matched location.';
+                weatherTemperature.textContent = `${Math.round(current.temperature_2m)} C`;
+                weatherWind.textContent = `Wind ${Math.round(current.wind_speed_10m)} km/h | code ${current.weather_code}`;
+                return `${weatherRegion.textContent} | ${weatherTemperature.textContent} | ${weatherWind.textContent}`;
             }
 
-            const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
-            const weatherData = await weatherResponse.json();
-            const current = weatherData.current;
-
-            weatherRegion.textContent = [location.name, location.admin1, location.country].filter(Boolean).join(', ');
-            weatherSummary.textContent = 'Live weather for the exact location match.';
-            weatherTemperature.textContent = `${Math.round(current.temperature_2m)} C`;
-            weatherWind.textContent = `Wind ${Math.round(current.wind_speed_10m)} km/h | code ${current.weather_code}`;
-            return `${weatherRegion.textContent} | ${weatherTemperature.textContent} | ${weatherWind.textContent}`;
+            throw new Error('Weather lookup could not verify this location yet.');
         } catch (error) {
             weatherSummary.textContent = error.message || 'Weather data is unavailable right now.';
-            weatherWind.textContent = 'Try a more specific district, city, or state name.';
+            weatherWind.textContent = 'AgriPulse will retry this place while building the report.';
             return `${region} | weather unavailable`;
         }
     }
@@ -1831,23 +1908,28 @@
 
         const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
         let y = 20;
+        const headerImageX = 150;
+        const headerImageY = 16;
+        const headerImageWidth = 36;
+        const headerImageHeight = 24;
 
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(11);
         pdf.setTextColor(22, 101, 52);
         pdf.text('AGRIPULSE REPORT', 20, y);
 
-        const imageAdded = await addPdfImage(pdf, cropImage, 138, 16, 52, 34);
+        const imageAdded = await addPdfImage(pdf, cropImage, headerImageX, headerImageY, headerImageWidth, headerImageHeight);
         if (!imageAdded) {
             pdf.setDrawColor(226, 232, 240);
-            pdf.roundedRect(138, 16, 52, 34, 4, 4);
+            pdf.roundedRect(headerImageX, headerImageY, headerImageWidth, headerImageHeight, 4, 4);
         }
 
         y += 10;
         pdf.setTextColor(15, 23, 42);
         pdf.setFontSize(20);
-        pdf.text(reportTitle, 20, y);
-        y += 10;
+        const titleLines = pdf.splitTextToSize(reportTitle, 116);
+        pdf.text(titleLines, 20, y);
+        y += titleLines.length * 8 + 2;
 
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(10.5);
@@ -1859,11 +1941,12 @@
             `Weather: ${weatherSummary || 'Not available'}`
         ];
         introLines.forEach(line => {
-            pdf.text(line, 20, y);
-            y += 6;
+            const wrapped = pdf.splitTextToSize(line, 116);
+            pdf.text(wrapped, 20, y);
+            y += wrapped.length * 5 + 1;
         });
 
-        y += 2;
+        y = Math.max(y + 2, headerImageY + headerImageHeight + 10);
         y = writePdfSection(pdf, 'What is happening?', [response.disruptionSummary || 'No disruption summary returned.'], y);
         y = writePdfSection(pdf, 'Actual problem in this area', [response.detailedProblem || 'No detailed problem explanation returned.'], y);
         y = writePdfSection(pdf, 'Risk factors', toPdfBulletLines(response.riskFactors, 'No risk factor returned.'), y);

@@ -43,6 +43,9 @@ class AgriServiceTest {
     @Mock
     private UserAccountService userAccountService;
 
+    @Mock
+    private WeatherLookupService weatherLookupService;
+
     private EmergencyAlertTool emergencyAlertTool;
     private AgriService agriService;
     private UserAccount userAccount;
@@ -50,12 +53,16 @@ class AgriServiceTest {
     @BeforeEach
     void setUp() {
         emergencyAlertTool = new EmergencyAlertTool();
-        agriService = new AgriService(chatClient, riskReportRepository, emergencyAlertTool, mandiPriceService, userAccountService);
+        agriService = new AgriService(chatClient, riskReportRepository, emergencyAlertTool, mandiPriceService, userAccountService, weatherLookupService);
         userAccount = new UserAccount();
         userAccount.setId(1L);
         userAccount.setFullName("Shaurya Rathi");
         userAccount.setEmail("shaurya@example.com");
         when(userAccountService.getRequiredUser("shaurya@example.com")).thenReturn(userAccount);
+        when(weatherLookupService.resolveWeatherContext(anyString(), any())).thenAnswer(invocation -> {
+            Object provided = invocation.getArgument(1);
+            return provided == null ? "weather unavailable" : provided.toString();
+        });
     }
 
     @Test
