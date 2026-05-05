@@ -34,7 +34,7 @@ public class AgriService {
 
     private static final String SYSTEM_PROMPT = """
             You are an Agri-Business Expert.
-            Analyze the supply chain risk for the given crop and region.
+            Analyze the supply chain risk for the given crop and location.
             Return a Risk Level, a detailed disruption explanation, and a Plan B strategy.
             If the risk level is High, call the sendEmergencyAlert tool before finalizing your answer.
             Keep the risk level limited to one of these values only: Low, Medium, High.
@@ -44,6 +44,10 @@ public class AgriService {
             Include practical detail about real disruption causes such as crop disease, heat wave, excess rainfall,
             flood risk, transport bottlenecks, market price swings, storage stress, and policy/export shocks when relevant.
             Tailor the answer to either an enterprise buyer or a farmer-producer based on stakeholderType.
+            Support nearly any crop and nearly any location.
+            Treat the provided location as exact user input. If the user gives a district, city, block, or state such as
+            Malda, West Bengal, use that exact place in your reasoning instead of replacing it with a generic region.
+            Use simple language that a new visitor can understand quickly.
             """;
 
     private final ChatClient agriChatClient;
@@ -59,14 +63,14 @@ public class AgriService {
                     .system(SYSTEM_PROMPT)
                     .user(userSpec -> userSpec.text("""
                             Crop Name: {cropName}
-                            Region: {region}
+                            Location: {region}
                             Stakeholder Type: {stakeholderType}
                             Quantity Tonnes: {quantityTonnes}
                             Crop Rate INR per Kg: {cropRatePerKgInr}
                             Farm Area Acres: {farmAreaAcres}
                             Planning Horizon Days: {planningHorizonDays}
 
-                            Analyze the agricultural supply chain risk for this crop and region.
+                            Analyze the agricultural supply chain risk for this crop and exact location.
                             Return a detailed, structured answer with:
                             - riskLevel
                             - disruptionSummary
@@ -80,6 +84,8 @@ public class AgriService {
                             - expectedSupplyImpactPercent as an integer
                             - expectedPriceIncreasePercent as an integer
                             - estimatedLossPercent as an integer
+                            Use simple language.
+                            Clearly describe the actual local problem in that place.
                             If the risk is High, call the sendEmergencyAlert tool using the same cropName, region,
                             riskLevel, and mitigationStrategy before you complete the response.
                             Do not call analyzeSupplyChainRisk. That is not a real tool.
