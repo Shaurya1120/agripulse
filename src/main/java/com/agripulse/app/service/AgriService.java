@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.ai.chat.client.ChatClient;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 // @Service marks this class as business logic.
 // Controllers should stay thin and delegate real work to services like this one.
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AgriService {
 
@@ -33,6 +35,9 @@ public class AgriService {
             Return a Risk Level and a Plan B strategy.
             If the risk level is High, call the sendEmergencyAlert tool before finalizing your answer.
             Keep the risk level limited to one of these values only: Low, Medium, High.
+            The only tool you are allowed to call is sendEmergencyAlert.
+            Never call any tool named analyzeSupplyChainRisk or any other tool name.
+            Do not invent tools. If risk is not High, do not call any tool.
             """;
 
     private final ChatClient agriChatClient;
@@ -54,6 +59,8 @@ public class AgriService {
                             Return a short mitigation strategy that a business user can act on.
                             If the risk is High, call the sendEmergencyAlert tool using the same cropName, region,
                             riskLevel, and mitigationStrategy before you complete the response.
+                            Do not call analyzeSupplyChainRisk. That is not a real tool.
+                            Return only the structured risk result for this request.
                             """)
                             .param("cropName", request.getCropName())
                             .param("region", request.getRegion()))
@@ -70,11 +77,42 @@ public class AgriService {
             return RiskAnalysisResponse.fromEntity(savedRiskReport);
         }
         catch (NonTransientAiException exception) {
+            log.warn(
+                    "AI provider request failed for crop='{}', region='{}'. type={}, message={}",
+                    request.getCropName(),
+                    request.getRegion(),
+                    exception.getClass().getSimpleName(),
+                    summarizeException(exception)
+            );
             throw new IllegalStateException("The AI provider is temporarily unavailable. Please try again shortly.", exception);
         }
         catch (DataAccessResourceFailureException exception) {
             throw exception;
         }
+        catch (RuntimeException exception) {
+            log.error(
+                    "Unexpected AI workflow failure for crop='{}', region='{}'. type={}, message={}",
+                    request.getCropName(),
+                    request.getRegion(),
+                    exception.getClass().getSimpleName(),
+                    summarizeException(exception)
+            );
+            throw exception;
+        }
+    }
+
+    private String summarizeException(Throwable throwable) {
+        Throwable cursor = throwable;
+        String lastMessage = throwable.getMessage();
+
+        while (cursor.getCause() != null && cursor.getCause() != cursor) {
+            cursor = cursor.getCause();
+            if (StringUtils.hasText(cursor.getMessage())) {
+                lastMessage = cursor.getMessage();
+            }
+        }
+
+        return StringUtils.hasText(lastMessage) ? lastMessage : "No provider message returned.";
     }
 
     private String normalizeRiskLevel(AiRiskAssessment aiRiskAssessment) {
