@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPulse Global Risk Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+<div class="mx-auto max-w-7xl px-6 py-10">
+    <header class="mb-10 flex flex-col gap-6 rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-slate-900 via-emerald-950 to-lime-950 p-8 shadow-2xl shadow-emerald-950/30">
+        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+                <p class="text-sm uppercase tracking-[0.35em] text-emerald-300">AI Supply Chain Command Center</p>
+                <h1 class="mt-2 text-4xl font-black tracking-tight text-white md:text-5xl">AgriPulse</h1>
+                <p class="mt-4 max-w-3xl text-base text-slate-300">
+                    Run fast crop-risk analysis, surface likely disruption patterns, and keep a Plan B ready for global agri-business operations.
+                </p>
+            </div>
+            <div class="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+                Example scenarios: Turmeric in Erode, Basmati Rice in Punjab, Coffee in Karnataka
+            </div>
+        </div>
+    </header>
+
+    <section class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Analyze Risk</h2>
+                    <p class="mt-1 text-sm text-slate-400">Enter a crop and region to generate an AI-backed risk report.</p>
+                </div>
+                <div id="spinner" class="hidden items-center gap-2 rounded-full bg-emerald-400/10 px-4 py-2 text-sm text-emerald-200">
+                    <span class="h-2.5 w-2.5 animate-ping rounded-full bg-emerald-300"></span>
+                    AI is thinking...
+                </div>
+            </div>
+
+            <form id="riskForm" class="grid gap-4 md:grid-cols-2">
+                <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-300">Crop Name</span>
+                    <input id="cropName" name="cropName" type="text" placeholder="Basmati Rice"
+                           class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-emerald-400">
+                </label>
+                <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-300">Region</span>
+                    <input id="region" name="region" type="text" placeholder="Punjab"
+                           class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-emerald-400">
+                </label>
+                <div class="md:col-span-2 flex flex-wrap items-center gap-3">
+                    <button type="submit" class="rounded-2xl bg-emerald-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-300">
+                        Analyze Supply Chain
+                    </button>
+                    <p class="text-sm text-slate-400">The engine also triggers an emergency alert tool whenever the model classifies a case as High risk.</p>
+                </div>
+            </form>
+
+            <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100"></div>
+
+            <article id="resultCard" class="mt-6 hidden rounded-3xl border border-emerald-400/20 bg-emerald-400/5 p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.3em] text-emerald-300">Latest AI Report</p>
+                        <h3 id="resultTitle" class="mt-2 text-2xl font-bold text-white"></h3>
+                    </div>
+                    <span id="riskBadge" class="rounded-full px-4 py-2 text-sm font-semibold"></span>
+                </div>
+                <p id="mitigationStrategy" class="mt-4 text-slate-200"></p>
+            </article>
+        </div>
+
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl">
+            <div class="mb-5">
+                <h2 class="text-2xl font-bold text-white">Global Risk Map</h2>
+                <p class="mt-1 text-sm text-slate-400">A simple operational view of regions with concentrated high-risk activity.</p>
+            </div>
+            <canvas id="riskMapChart" height="260"></canvas>
+        </div>
+    </section>
+
+    <section class="mt-8 rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl">
+        <div class="mb-5 flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-white">Risk History</h2>
+                <p class="mt-1 text-sm text-slate-400">Recent analyses across crops and regions.</p>
+            </div>
+            <div class="flex gap-3">
+                <button id="prevPage" class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-40">Previous</button>
+                <button id="nextPage" class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-40">Next</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-800 text-left">
+                <thead>
+                <tr class="text-sm uppercase tracking-wide text-slate-400">
+                    <th class="px-4 py-3">Crop</th>
+                    <th class="px-4 py-3">Region</th>
+                    <th class="px-4 py-3">Risk</th>
+                    <th class="px-4 py-3">Plan B</th>
+                </tr>
+                </thead>
+                <tbody id="historyTableBody" class="divide-y divide-slate-800 text-sm text-slate-200">
+                <tr th:each="report : ${dashboard.recentReports}">
+                    <td class="px-4 py-4" th:text="${report.cropName}">Basmati Rice</td>
+                    <td class="px-4 py-4" th:text="${report.region}">Punjab</td>
+                    <td class="px-4 py-4" th:text="${report.riskLevel}">High</td>
+                    <td class="px-4 py-4" th:text="${report.mitigationStrategy}">Build alternate procurement routes.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p id="pageLabel" class="mt-4 text-sm text-slate-400">Page 1</p>
+    </section>
+
+    <section class="mt-8 grid gap-6 lg:grid-cols-2">
+        <article class="rounded-3xl border border-amber-400/20 bg-amber-400/5 p-6">
+            <h2 class="text-xl font-bold text-amber-100">Plan B for Turmeric</h2>
+            <p class="mt-3 text-sm leading-7 text-amber-50/90">
+                When turmeric supply is squeezed by heatwaves, disease pressure, or freight disruptions, AgriPulse should prioritize alternate sourcing clusters,
+                dried inventory buffers, and early transport contracts to reduce downstream volatility.
+            </p>
+        </article>
+        <article class="rounded-3xl border border-sky-400/20 bg-sky-400/5 p-6">
+            <h2 class="text-xl font-bold text-sky-100">Plan B for Basmati Rice</h2>
+            <p class="mt-3 text-sm leading-7 text-sky-50/90">
+                For basmati rice, the Plan B should focus on procurement diversification, export-lane monitoring, and warehouse positioning near high-demand markets
+                when monsoon shocks or policy moves threaten supply timing.
+            </p>
+        </article>
+    </section>
+</div>
+
+<script th:inline="javascript">
+    const dashboard = /*[[${dashboard}]]*/ {};
+    const initialMapPoints = dashboard.riskMapPoints || [];
+    let currentPage = 0;
+    let totalPages = 1;
+
+    const form = document.getElementById('riskForm');
+    const spinner = document.getElementById('spinner');
+    const errorBanner = document.getElementById('errorBanner');
+    const resultCard = document.getElementById('resultCard');
+    const resultTitle = document.getElementById('resultTitle');
+    const riskBadge = document.getElementById('riskBadge');
+    const mitigationStrategy = document.getElementById('mitigationStrategy');
+    const historyTableBody = document.getElementById('historyTableBody');
+    const pageLabel = document.getElementById('pageLabel');
+    const prevPageButton = document.getElementById('prevPage');
+    const nextPageButton = document.getElementById('nextPage');
+
+    const riskMapChart = new Chart(document.getElementById('riskMapChart'), {
+        type: 'bar',
+        data: {
+            labels: initialMapPoints.map(point => point.region),
+            datasets: [
+                {
+                    label: 'High Risk Reports',
+                    data: initialMapPoints.map(point => point.highRiskReports),
+                    backgroundColor: 'rgba(74, 222, 128, 0.75)',
+                    borderRadius: 14
+                },
+                {
+                    label: 'Total Reports',
+                    data: initialMapPoints.map(point => point.totalReports),
+                    backgroundColor: 'rgba(148, 163, 184, 0.35)',
+                    borderRadius: 14
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#e2e8f0'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#cbd5e1' },
+                    grid: { color: 'rgba(148, 163, 184, 0.08)' }
+                },
+                y: {
+                    ticks: { color: '#cbd5e1', precision: 0 },
+                    grid: { color: 'rgba(148, 163, 184, 0.08)' }
+                }
+            }
+        }
+    });
+
+    function badgeClassesForRisk(riskLevel) {
+        if (riskLevel === 'High') {
+            return 'bg-rose-500/15 text-rose-100 border border-rose-500/30';
+        }
+        if (riskLevel === 'Medium') {
+            return 'bg-amber-400/15 text-amber-100 border border-amber-400/30';
+        }
+        return 'bg-emerald-400/15 text-emerald-100 border border-emerald-400/30';
+    }
+
+    function showError(message) {
+        errorBanner.textContent = message;
+        errorBanner.classList.remove('hidden');
+    }
+
+    function hideError() {
+        errorBanner.classList.add('hidden');
+        errorBanner.textContent = '';
+    }
+
+    function renderHistory(items) {
+        historyTableBody.innerHTML = '';
+
+        if (!items.length) {
+            historyTableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-slate-400">No history yet. Run your first analysis above.</td></tr>';
+            return;
+        }
+
+        items.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="px-4 py-4">${item.cropName}</td>
+                <td class="px-4 py-4">${item.region}</td>
+                <td class="px-4 py-4">${item.riskLevel}</td>
+                <td class="px-4 py-4">${item.mitigationStrategy}</td>
+            `;
+            historyTableBody.appendChild(row);
+        });
+    }
+
+    async function loadHistory(page) {
+        const response = await fetch(`/api/risk/history?page=${page}&size=5`);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not load report history.');
+        }
+
+        currentPage = data.page;
+        totalPages = Math.max(data.totalPages, 1);
+        pageLabel.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+        prevPageButton.disabled = currentPage === 0;
+        nextPageButton.disabled = currentPage + 1 >= totalPages;
+        renderHistory(data.items || []);
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        hideError();
+        spinner.classList.remove('hidden');
+        spinner.classList.add('flex');
+
+        const payload = {
+            cropName: document.getElementById('cropName').value,
+            region: document.getElementById('region').value
+        };
+
+        try {
+            const response = await fetch('/api/risk/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'The analysis could not be completed.');
+            }
+
+            resultCard.classList.remove('hidden');
+            resultTitle.textContent = `${data.cropName} in ${data.region}`;
+            riskBadge.textContent = data.riskLevel;
+            riskBadge.className = `rounded-full px-4 py-2 text-sm font-semibold ${badgeClassesForRisk(data.riskLevel)}`;
+            mitigationStrategy.textContent = data.mitigationStrategy;
+
+            await loadHistory(0);
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            spinner.classList.add('hidden');
+            spinner.classList.remove('flex');
+        }
+    });
+
+    prevPageButton.addEventListener('click', () => {
+        if (currentPage > 0) {
+            loadHistory(currentPage - 1).catch(error => showError(error.message));
+        }
+    });
+
+    nextPageButton.addEventListener('click', () => {
+        if (currentPage + 1 < totalPages) {
+            loadHistory(currentPage + 1).catch(error => showError(error.message));
+        }
+    });
+</script>
+</body>
+</html>

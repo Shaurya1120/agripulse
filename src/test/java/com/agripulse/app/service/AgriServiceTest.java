@@ -1,0 +1,81 @@
+package com.agripulse.app.service;
+
+import com.agripulse.app.dto.AiRiskAssessment;
+import com.agripulse.app.dto.RiskAnalysisRequest;
+import com.agripulse.app.dto.RiskAnalysisResponse;
+import com.agripulse.app.model.RiskReport;
+import com.agripulse.app.repository.RiskReportRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.ai.chat.client.ChatClient;
+
+import java.util.function.Consumer;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class AgriServiceTest {
+
+    @Mock
+    private ChatClient chatClient;
+
+    @Mock
+    private ChatClient.ChatClientRequestSpec chatClientRequestSpec;
+
+    @Mock
+    private ChatClient.CallResponseSpec callResponseSpec;
+
+    @Mock
+    private RiskReportRepository riskReportRepository;
+
+    private AgriService agriService;
+
+    @BeforeEach
+    void setUp() {
+        agriService = new AgriService(chatClient, riskReportRepository);
+    }
+
+    @Test
+    void analyzeRiskPersistsNormalizedAiResponse() {
+        RiskAnalysisRequest request = new RiskAnalysisRequest("Wheat", "Punjab");
+        AiRiskAssessment aiRiskAssessment = new AiRiskAssessment(
+                "high",
+                "Shift part of sourcing to a cooler nearby region and hedge transport costs."
+        );
+
+        when(chatClient.prompt()).thenReturn(chatClientRequestSpec);
+        when(chatClientRequestSpec.system(anyString())).thenReturn(chatClientRequestSpec);
+        when(chatClientRequestSpec.user(any(Consumer.class))).thenReturn(chatClientRequestSpec);
+        when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+        when(callResponseSpec.entity(AiRiskAssessment.class)).thenReturn(aiRiskAssessment);
+        when(riskReportRepository.save(any(RiskReport.class))).thenAnswer(invocation -> {
+            RiskReport saved = invocation.getArgument(0);
+            saved.setId(99L);
+            return saved;
+        });
+
+        RiskAnalysisResponse response = agriService.analyzeRisk(request);
+
+        ArgumentCaptor<RiskReport> riskReportCaptor = ArgumentCaptor.forClass(RiskReport.class);
+        org.mockito.Mockito.verify(riskReportRepository).save(riskReportCaptor.capture());
+
+        RiskReport savedRiskReport = riskReportCaptor.getValue();
+
+        assertThat(savedRiskReport.getCropName()).isEqualTo("Wheat");
+        assertThat(savedRiskReport.getRegion()).isEqualTo("Punjab");
+        assertThat(savedRiskReport.getRiskLevel()).isEqualTo("High");
+        assertThat(savedRiskReport.getMitigationStrategy()).contains("Shift part of sourcing");
+
+        assertThat(response.getId()).isEqualTo(99L);
+        assertThat(response.getRiskLevel()).isEqualTo("High");
+        assertThat(response.getRegion()).isEqualTo("Punjab");
+    }
+}
+

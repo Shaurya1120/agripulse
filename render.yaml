@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: agripulse-web
+    runtime: docker
+    plan: starter
+    autoDeployTrigger: commit
+    healthCheckPath: /actuator/health
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agripulse-db
+          property: connectionString
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: agripulse-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: agripulse-db
+          property: password
+
+databases:
+  - name: agripulse-db
+    plan: basic-256mb
+

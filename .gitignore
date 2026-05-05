@@ -1,0 +1,11 @@
+target/
+.m2/
+tools/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+target/app.out.log
+target/app.err.log
+
