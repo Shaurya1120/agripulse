@@ -159,25 +159,58 @@
                         <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"></div>
 
                         <section class="mt-7 grid gap-4 xl:grid-cols-3">
-                            <article class="overflow-hidden rounded-[28px] border border-line bg-white shadow-sm">
-                                <img src="/images/crop-wheat.svg" alt="Illustration of wheat crop analytics" class="h-40 w-full object-cover">
+                            <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="wheat">
+                                <button type="button" class="w-full text-left">
+                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80" alt="Wheat field" class="h-40 w-full object-cover" loading="lazy" decoding="async">
+                                </button>
                                 <div class="p-4">
-                                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Wheat</p>
-                                    <p class="mt-2 text-sm leading-6 text-slate-600">Use for heatwave-sensitive grain routes and yield pressure monitoring.</p>
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Wheat</p>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">Use for heatwave-sensitive grain routes and yield pressure monitoring.</p>
+                                        </div>
+                                        <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-agri hover:text-agri" data-open-crop="wheat">View</button>
+                                    </div>
+                                    <div class="mt-4 flex items-center justify-between gap-3">
+                                        <span class="text-xs text-slate-400">Recommended region: Punjab</span>
+                                        <button type="button" class="rounded-full bg-agriSoft px-3 py-1.5 text-xs font-semibold text-agri transition hover:bg-emerald-100" data-use-crop="wheat">Use this crop</button>
+                                    </div>
                                 </div>
                             </article>
-                            <article class="overflow-hidden rounded-[28px] border border-line bg-white shadow-sm">
-                                <img src="/images/crop-rice.svg" alt="Illustration of rice crop analytics" class="h-40 w-full object-cover">
+                            <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="rice">
+                                <button type="button" class="w-full text-left">
+                                    <img src="https://images.unsplash.com/photo-1536051465113-5a56f689dc00?auto=format&fit=crop&w=900&q=80" alt="Rice paddy" class="h-40 w-full object-cover" loading="lazy" decoding="async">
+                                </button>
                                 <div class="p-4">
-                                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Rice</p>
-                                    <p class="mt-2 text-sm leading-6 text-slate-600">Helpful for export-heavy rice supply chains with monsoon and logistics risk.</p>
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Rice</p>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">Helpful for export-heavy rice supply chains with monsoon and logistics risk.</p>
+                                        </div>
+                                        <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-dataBlue hover:text-dataBlue" data-open-crop="rice">View</button>
+                                    </div>
+                                    <div class="mt-4 flex items-center justify-between gap-3">
+                                        <span class="text-xs text-slate-400">Recommended region: Punjab</span>
+                                        <button type="button" class="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-semibold text-dataBlue transition hover:bg-sky-100" data-use-crop="rice">Use this crop</button>
+                                    </div>
                                 </div>
                             </article>
-                            <article class="overflow-hidden rounded-[28px] border border-line bg-white shadow-sm">
-                                <img src="/images/crop-coffee.svg" alt="Illustration of coffee crop analytics" class="h-40 w-full object-cover">
+                            <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="coffee">
+                                <button type="button" class="w-full text-left">
+                                    <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=900&q=80" alt="Coffee plantation" class="h-40 w-full object-cover" loading="lazy" decoding="async">
+                                </button>
                                 <div class="p-4">
-                                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Coffee</p>
-                                    <p class="mt-2 text-sm leading-6 text-slate-600">Useful for quality-sensitive routes where rainfall and storage matter.</p>
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Coffee</p>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">Useful for quality-sensitive routes where rainfall and storage matter.</p>
+                                        </div>
+                                        <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-amber-700 hover:text-amber-700" data-open-crop="coffee">View</button>
+                                    </div>
+                                    <div class="mt-4 flex items-center justify-between gap-3">
+                                        <span class="text-xs text-slate-400">Recommended region: Karnataka</span>
+                                        <button type="button" class="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100" data-use-crop="coffee">Use this crop</button>
+                                    </div>
                                 </div>
                             </article>
                         </section>
@@ -402,6 +435,47 @@
     </main>
 </div>
 
+<div id="cropModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-sm">
+    <div class="relative w-full max-w-4xl overflow-hidden rounded-[32px] bg-white shadow-soft">
+        <button id="closeCropModal" type="button" class="absolute right-5 top-5 z-10 rounded-full border border-white/70 bg-white/80 px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-white">
+            Close
+        </button>
+        <div class="grid lg:grid-cols-[1.1fr_0.9fr]">
+            <img id="cropModalImage" src="" alt="" class="h-72 w-full object-cover lg:h-full">
+            <div class="p-7">
+                <p id="cropModalLabel" class="text-xs font-semibold uppercase tracking-[0.24em] text-agri"></p>
+                <h3 id="cropModalTitle" class="mt-3 text-3xl font-extrabold tracking-tight text-slate-950"></h3>
+                <p id="cropModalSummary" class="mt-4 text-sm leading-7 text-slate-600"></p>
+
+                <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-line bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Best Demo Region</p>
+                        <p id="cropModalRegion" class="mt-2 text-lg font-semibold text-slate-900"></p>
+                    </div>
+                    <div class="rounded-2xl border border-line bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Typical Risk Lens</p>
+                        <p id="cropModalRisk" class="mt-2 text-lg font-semibold text-slate-900"></p>
+                    </div>
+                </div>
+
+                <div class="mt-6 rounded-2xl border border-line bg-agriSoft p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-agri">Quick Scenario</p>
+                    <p id="cropModalScenario" class="mt-2 text-sm leading-7 text-slate-700"></p>
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <button id="applyCropPreset" type="button" class="rounded-full bg-agri px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">
+                        Use This Scenario
+                    </button>
+                    <button id="focusRegionInput" type="button" class="rounded-full border border-line px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-dataBlue hover:text-dataBlue">
+                        Edit Region
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script th:inline="javascript">
     const dashboard = /*[[${dashboard}]]*/ {};
     const initialMapPoints = dashboard.riskMapPoints || [];
@@ -424,6 +498,8 @@
     const riskBadge = document.getElementById('riskBadge');
     const mitigationStrategy = document.getElementById('mitigationStrategy');
     const executiveSignal = document.getElementById('executiveSignal');
+    const cropNameInput = document.getElementById('cropName');
+    const regionInput = document.getElementById('region');
     const historyTableBody = document.getElementById('historyTableBody');
     const pageLabel = document.getElementById('pageLabel');
     const prevPageButton = document.getElementById('prevPage');
@@ -438,8 +514,52 @@
     const trackedRegionsMetric = document.getElementById('trackedRegionsMetric');
     const highRiskMetric = document.getElementById('highRiskMetric');
     const priceIndexMetric = document.getElementById('priceIndexMetric');
+    const cropModal = document.getElementById('cropModal');
+    const closeCropModal = document.getElementById('closeCropModal');
+    const cropModalImage = document.getElementById('cropModalImage');
+    const cropModalLabel = document.getElementById('cropModalLabel');
+    const cropModalTitle = document.getElementById('cropModalTitle');
+    const cropModalSummary = document.getElementById('cropModalSummary');
+    const cropModalRegion = document.getElementById('cropModalRegion');
+    const cropModalRisk = document.getElementById('cropModalRisk');
+    const cropModalScenario = document.getElementById('cropModalScenario');
+    const applyCropPresetButton = document.getElementById('applyCropPreset');
+    const focusRegionInputButton = document.getElementById('focusRegionInput');
 
     const riskLevelPriority = { High: 3, Medium: 2, Low: 1 };
+    const cropLibrary = {
+        wheat: {
+            label: 'Crop Intelligence',
+            title: 'Wheat Supply Chain',
+            cropName: 'Wheat',
+            region: 'Punjab',
+            riskLens: 'Heat stress and price volatility',
+            scenario: 'Run a wheat assessment in Punjab to model yield pressure, storage buffering, and alternate sourcing routes.',
+            summary: 'Wheat routes are especially sensitive to weather swings, transport bottlenecks, and fast-moving commodity pricing. This is a strong demo crop when you want a classic staple-food risk story.',
+            image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=85'
+        },
+        rice: {
+            label: 'Crop Intelligence',
+            title: 'Rice Export Corridor',
+            cropName: 'Basmati Rice',
+            region: 'Punjab',
+            riskLens: 'Monsoon, procurement, and export logistics',
+            scenario: 'Run a basmati rice assessment in Punjab to surface weather exposure, export timing risk, and backup procurement options.',
+            summary: 'Rice is a great portfolio crop for AgriPulse because it mixes climate sensitivity with export, logistics, and market-price uncertainty in a single story.',
+            image: 'https://images.unsplash.com/photo-1536051465113-5a56f689dc00?auto=format&fit=crop&w=1400&q=85'
+        },
+        coffee: {
+            label: 'Crop Intelligence',
+            title: 'Coffee Plantation Network',
+            cropName: 'Coffee',
+            region: 'Karnataka',
+            riskLens: 'Rainfall, storage quality, and supplier continuity',
+            scenario: 'Run a coffee assessment in Karnataka to model rainfall disruption, bean quality risk, and alternate warehouse planning.',
+            summary: 'Coffee makes the dashboard feel more global and premium because it introduces plantation-level climate risk and storage-quality concerns, not just commodity pricing.',
+            image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1400&q=85'
+        }
+    };
+    let activeCropPresetKey = null;
 
     const chartDefaults = {
         plugins: {
@@ -588,6 +708,45 @@
     function hideError() {
         errorBanner.classList.add('hidden');
         errorBanner.textContent = '';
+    }
+
+    function applyCropPreset(key) {
+        const preset = cropLibrary[key];
+        if (!preset) {
+            return;
+        }
+
+        cropNameInput.value = preset.cropName;
+        regionInput.value = preset.region;
+        hideError();
+        regionInput.focus();
+    }
+
+    function openCropModal(key) {
+        const preset = cropLibrary[key];
+        if (!preset) {
+            return;
+        }
+
+        activeCropPresetKey = key;
+        cropModalLabel.textContent = preset.label;
+        cropModalTitle.textContent = preset.title;
+        cropModalSummary.textContent = preset.summary;
+        cropModalRegion.textContent = preset.region;
+        cropModalRisk.textContent = preset.riskLens;
+        cropModalScenario.textContent = preset.scenario;
+        cropModalImage.src = preset.image;
+        cropModalImage.alt = preset.title;
+        cropModal.classList.remove('hidden');
+        cropModal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeCropModalPanel() {
+        cropModal.classList.add('hidden');
+        cropModal.classList.remove('flex');
+        document.body.classList.remove('overflow-hidden');
+        activeCropPresetKey = null;
     }
 
     function buildPriceTrendSeries(items) {
@@ -875,6 +1034,50 @@
             }
             renderHistory(currentHistoryItems);
         });
+    });
+
+    document.querySelectorAll('[data-open-crop], .crop-card img').forEach(element => {
+        element.addEventListener('click', event => {
+            const card = event.currentTarget.closest('[data-crop-key]');
+            if (card) {
+                openCropModal(card.dataset.cropKey);
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-use-crop]').forEach(button => {
+        button.addEventListener('click', () => {
+            applyCropPreset(button.dataset.useCrop);
+        });
+    });
+
+    applyCropPresetButton.addEventListener('click', () => {
+        if (activeCropPresetKey) {
+            applyCropPreset(activeCropPresetKey);
+            closeCropModalPanel();
+        }
+    });
+
+    focusRegionInputButton.addEventListener('click', () => {
+        if (activeCropPresetKey) {
+            applyCropPreset(activeCropPresetKey);
+        }
+        closeCropModalPanel();
+        regionInput.focus();
+    });
+
+    closeCropModal.addEventListener('click', closeCropModalPanel);
+
+    cropModal.addEventListener('click', event => {
+        if (event.target === cropModal) {
+            closeCropModalPanel();
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !cropModal.classList.contains('hidden')) {
+            closeCropModalPanel();
+        }
     });
 
     pdfButton.addEventListener('click', generatePdfReport);
