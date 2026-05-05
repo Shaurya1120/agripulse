@@ -10,6 +10,7 @@ import com.agripulse.app.model.RiskReport;
 import com.agripulse.app.repository.RiskReportRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +55,10 @@ public class AgriService {
             For farmer reports, also provide a Hindi version of the key explanation and action plan.
             Be conservative with risk scoring.
             If there is no strong current disruption signal from the location and weather context, return No Risk.
+            If the live weather context looks calm or stable, do not force a risk label above Low unless there is a
+            clearly stated active issue such as flooding, severe heat, heavy rain, crop disease, transport closure,
+            storage failure, or a sharp market or policy disruption.
+            Do not invent disease, logistics, or policy problems when the live context looks normal.
             Use Low only for mild pressure, Medium for meaningful but manageable pressure, High for serious disruption,
             and Very High only for severe active disruption.
             """;
@@ -120,10 +125,13 @@ public class AgriService {
                     .call()
                     .entity(AiRiskAssessment.class);
 
+            String normalizedRiskLevel = normalizeRiskLevel(aiRiskAssessment);
+            String adjustedRiskLevel = adjustRiskLevelForLiveSignals(normalizedRiskLevel, request, aiRiskAssessment);
+
             RiskReport riskReport = new RiskReport();
             riskReport.setCropName(request.getCropName().trim());
             riskReport.setRegion(request.getRegion().trim());
-            riskReport.setRiskLevel(normalizeRiskLevel(aiRiskAssessment));
+            riskReport.setRiskLevel(adjustedRiskLevel);
             riskReport.setMitigationStrategy(normalizeMitigationStrategy(aiRiskAssessment));
 
             RiskReport savedRiskReport = riskReportRepository.save(riskReport);
@@ -133,7 +141,7 @@ public class AgriService {
                     savedRiskReport.getId(),
                     savedRiskReport.getCropName(),
                     savedRiskReport.getRegion(),
-                    savedRiskReport.getRiskLevel(),
+                    adjustedRiskLevel,
                     savedRiskReport.getMitigationStrategy(),
                     normalizeStakeholderType(request),
                     defaultText(aiRiskAssessment.getDisruptionSummary(), "AgriPulse identified meaningful disruption pressure in this corridor."),
@@ -221,6 +229,119 @@ public class AgriService {
         }
 
         return aiRiskAssessment.getMitigationStrategy().trim();
+    }
+
+    private String adjustRiskLevelForLiveSignals(String normalizedRiskLevel, RiskAnalysisRequest request, AiRiskAssessment aiRiskAssessment) {
+        if (!StringUtils.hasText(normalizedRiskLevel)) {
+            return "Medium";
+        }
+
+        String weatherContext = request == null ? "" : defaultText(request.getWeatherContext(), "");
+        String aiContext = String.join(" ",
+                defaultText(aiRiskAssessment.getDisruptionSummary(), ""),
+                defaultText(aiRiskAssessment.getPrimaryThreat(), ""),
+                defaultText(aiRiskAssessment.getDetailedProblem(), ""),
+                String.join(" ", normalizeList(aiRiskAssessment.getRiskFactors()))
+        ).toLowerCase(Locale.ROOT);
+
+        if (containsAny(aiContext,
+                "no meaningful disruption",
+                "no major disruption",
+                "no current disruption",
+                "stable conditions",
+                "normal conditions",
+                "operations remain stable")) {
+            return "No Risk";
+        }
+
+        boolean stableWeather = isStableWeatherContext(weatherContext);
+        boolean severeSignal = containsAny(aiContext,
+                "flood", "flooding", "heat wave", "heatwave", "drought", "crop disease", "blight",
+                "rust", "pest outbreak", "locust", "transport closure", "road closure", "storage failure",
+                "export ban", "policy shock", "heavy rain", "extreme rainfall", "severe rainfall",
+                "cyclone", "storm", "hailstorm", "landslide");
+
+        if (!stableWeather || severeSignal) {
+            return normalizedRiskLevel;
+        }
+
+        return switch (normalizedRiskLevel) {
+            case "Very High" -> "Medium";
+            case "High" -> "Low";
+            case "Medium" -> "Low";
+            case "Low" -> "No Risk";
+            default -> normalizedRiskLevel;
+        };
+    }
+
+    private boolean isStableWeatherContext(String weatherContext) {
+        if (!StringUtils.hasText(weatherContext)) {
+            return false;
+        }
+
+        String normalized = weatherContext.toLowerCase(Locale.ROOT);
+        Integer weatherCode = extractIntAfter(normalized, "code ");
+        Integer windSpeed = extractIntAfter(normalized, "wind ");
+        Integer temperature = extractTemperatureCelsius(normalized);
+
+        boolean calmWeatherCode = weatherCode != null && Arrays.asList(0, 1, 2, 3).contains(weatherCode);
+        boolean calmWind = windSpeed != null && windSpeed <= 18;
+        boolean normalTemperature = temperature != null && temperature >= 10 && temperature <= 36;
+
+        return calmWeatherCode && calmWind && normalTemperature;
+    }
+
+    private Integer extractIntAfter(String text, String marker) {
+        int index = text.indexOf(marker);
+        if (index < 0) {
+            return null;
+        }
+
+        StringBuilder digits = new StringBuilder();
+        for (int i = index + marker.length(); i < text.length(); i++) {
+            char current = text.charAt(i);
+            if (Character.isDigit(current)) {
+                digits.append(current);
+            }
+            else if (digits.length() > 0) {
+                break;
+            }
+        }
+
+        if (digits.isEmpty()) {
+            return null;
+        }
+
+        return Integer.parseInt(digits.toString());
+    }
+
+    private Integer extractTemperatureCelsius(String weatherContext) {
+        for (String segment : weatherContext.split("\\|")) {
+            String trimmed = segment.trim();
+            if (trimmed.endsWith(" c")) {
+                String numericPart = trimmed.substring(0, trimmed.length() - 2).trim();
+                try {
+                    return Integer.parseInt(numericPart);
+                }
+                catch (NumberFormatException ignored) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean containsAny(String text, String... needles) {
+        if (!StringUtils.hasText(text)) {
+            return false;
+        }
+
+        for (String needle : needles) {
+            if (text.contains(needle)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String normalizeStakeholderType(RiskAnalysisRequest request) {
