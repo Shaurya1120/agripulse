@@ -161,7 +161,7 @@
                         <section class="mt-7 grid gap-4 xl:grid-cols-3">
                             <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="wheat">
                                 <button type="button" class="w-full text-left">
-                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80" alt="Wheat field" class="h-40 w-full object-cover" loading="lazy" decoding="async">
+                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80" alt="Wheat field" class="h-40 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-wheat.svg';">
                                 </button>
                                 <div class="p-4">
                                     <div class="flex items-start justify-between gap-3">
@@ -179,7 +179,7 @@
                             </article>
                             <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="rice">
                                 <button type="button" class="w-full text-left">
-                                    <img src="https://images.unsplash.com/photo-1536051465113-5a56f689dc00?auto=format&fit=crop&w=900&q=80" alt="Rice paddy" class="h-40 w-full object-cover" loading="lazy" decoding="async">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/960px-Rice_paddy_taken_closely.jpg" alt="Rice paddy" class="h-40 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
                                 </button>
                                 <div class="p-4">
                                     <div class="flex items-start justify-between gap-3">
@@ -197,7 +197,7 @@
                             </article>
                             <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="coffee">
                                 <button type="button" class="w-full text-left">
-                                    <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=900&q=80" alt="Coffee plantation" class="h-40 w-full object-cover" loading="lazy" decoding="async">
+                                    <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=900&q=80" alt="Coffee plantation" class="h-40 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-coffee.svg';">
                                 </button>
                                 <div class="p-4">
                                     <div class="flex items-start justify-between gap-3">
@@ -536,7 +536,8 @@
             riskLens: 'Heat stress and price volatility',
             scenario: 'Run a wheat assessment in Punjab to model yield pressure, storage buffering, and alternate sourcing routes.',
             summary: 'Wheat routes are especially sensitive to weather swings, transport bottlenecks, and fast-moving commodity pricing. This is a strong demo crop when you want a classic staple-food risk story.',
-            image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=85'
+            image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=85',
+            fallbackImage: '/images/crop-wheat.svg'
         },
         rice: {
             label: 'Crop Intelligence',
@@ -546,7 +547,8 @@
             riskLens: 'Monsoon, procurement, and export logistics',
             scenario: 'Run a basmati rice assessment in Punjab to surface weather exposure, export timing risk, and backup procurement options.',
             summary: 'Rice is a great portfolio crop for AgriPulse because it mixes climate sensitivity with export, logistics, and market-price uncertainty in a single story.',
-            image: 'https://images.unsplash.com/photo-1536051465113-5a56f689dc00?auto=format&fit=crop&w=1400&q=85'
+            image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg',
+            fallbackImage: '/images/crop-rice.svg'
         },
         coffee: {
             label: 'Crop Intelligence',
@@ -556,7 +558,8 @@
             riskLens: 'Rainfall, storage quality, and supplier continuity',
             scenario: 'Run a coffee assessment in Karnataka to model rainfall disruption, bean quality risk, and alternate warehouse planning.',
             summary: 'Coffee makes the dashboard feel more global and premium because it introduces plantation-level climate risk and storage-quality concerns, not just commodity pricing.',
-            image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1400&q=85'
+            image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1400&q=85',
+            fallbackImage: '/images/crop-coffee.svg'
         }
     };
     let activeCropPresetKey = null;
@@ -736,6 +739,10 @@
         cropModalRisk.textContent = preset.riskLens;
         cropModalScenario.textContent = preset.scenario;
         cropModalImage.src = preset.image;
+        cropModalImage.onerror = () => {
+            cropModalImage.onerror = null;
+            cropModalImage.src = preset.fallbackImage;
+        };
         cropModalImage.alt = preset.title;
         cropModal.classList.remove('hidden');
         cropModal.classList.add('flex');
