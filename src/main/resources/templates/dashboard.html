@@ -77,12 +77,42 @@
     </nav>
 
     <main class="relative mx-auto max-w-7xl px-6 py-8 lg:py-10">
-        <section class="mb-8 rounded-[28px] border border-line bg-white p-6 shadow-panel">
-            <p class="text-sm font-semibold uppercase tracking-[0.26em] text-agri">About Us</p>
-            <h2 class="mt-2 text-2xl font-bold text-slate-950">AgriPulse helps buyers, exporters, farmers, and producers understand crop risk fast.</h2>
-            <p class="interactive-copy mt-3 max-w-4xl text-sm leading-7 text-slate-600">
-                We explain the local disruption, estimate possible loss, and turn the result into a simple action plan with weather, charts, and exportable reports.
-            </p>
+        <section class="mb-8 grid gap-6 rounded-[28px] border border-line bg-white p-6 shadow-panel lg:grid-cols-[1.15fr_0.85fr]">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.26em] text-agri">About Us</p>
+                <h2 class="mt-2 text-2xl font-bold text-slate-950">AgriPulse helps buyers, exporters, farmers, and producers understand crop risk fast.</h2>
+                <p class="interactive-copy mt-3 max-w-4xl text-sm leading-7 text-slate-600">
+                    We explain the local disruption, estimate possible loss, and turn the result into a simple action plan with weather, charts, and exportable reports.
+                </p>
+                <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                    <div class="rounded-2xl border border-line bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Explain</p>
+                        <p class="mt-2 text-sm text-slate-600">Local problem, crop threat, and disruption reason.</p>
+                    </div>
+                    <div class="rounded-2xl border border-line bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Calculate</p>
+                        <p class="mt-2 text-sm text-slate-600">Loss estimate, price pressure, and supply impact.</p>
+                    </div>
+                    <div class="rounded-2xl border border-line bg-slate-50 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-warning">Respond</p>
+                        <p class="mt-2 text-sm text-slate-600">Action plan for enterprises, farmers, and producers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <article class="overflow-hidden rounded-[24px] border border-line bg-slate-50 shadow-sm">
+                    <img id="aboutImageOne" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg" alt="Agriculture field" class="h-48 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
+                    <div class="p-4">
+                        <p id="aboutCaptionOne" class="text-sm font-semibold text-slate-700">Field intelligence</p>
+                    </div>
+                </article>
+                <article class="overflow-hidden rounded-[24px] border border-line bg-slate-50 shadow-sm">
+                    <img id="aboutImageTwo" src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80" alt="Crop sourcing network" class="h-48 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-wheat.svg';">
+                    <div class="p-4">
+                        <p id="aboutCaptionTwo" class="text-sm font-semibold text-slate-700">Crop and supply planning</p>
+                    </div>
+                </article>
+            </div>
         </section>
 
         <section id="overview" class="grid gap-8 xl:grid-cols-[1.3fr_0.7fr]">
@@ -181,7 +211,7 @@
                 </div>
             </article>
             <article class="overflow-hidden rounded-[30px] border border-line bg-white shadow-panel">
-                <img src="https://images.unsplash.com/photo-1536051465113-5a56f689dc00?auto=format&fit=crop&w=1200&q=80" alt="Modern rice cultivation" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
+                <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1200&q=80" alt="Crop field and plant health monitoring" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
                 <div class="p-6">
                     <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Problem Visibility</p>
                     <h3 class="mt-3 text-2xl font-bold text-slate-950">Reports explain the real local problem.</h3>
@@ -375,6 +405,7 @@
                     <p class="text-sm font-semibold uppercase tracking-[0.28em] text-dataBlue">Farmer & Producer Desk</p>
                     <h3 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">For growers who want protection, not just a warning</h3>
                     <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">This section helps a producer see likely income impact, understand the real threat, and collect a simple farmer PDF.</p>
+                    <p class="mt-3 text-sm leading-7 text-slate-700">यह भाग किसानों और उत्पादकों को संभावित नुकसान, असली स्थानीय समस्या, और बचाव के आसान कदम समझाने के लिए है।</p>
 
                     <form id="farmerForm" class="mt-6 grid gap-5">
                         <div class="grid gap-4 md:grid-cols-2">
@@ -405,7 +436,10 @@
                             </label>
                         </div>
                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                            <p class="interactive-copy max-w-xl text-sm leading-7 text-slate-500">Use this desk when you want a producer view: what may happen, how much income is at risk, what to do now, and which schemes may help.</p>
+                            <div class="max-w-xl space-y-2">
+                                <p class="interactive-copy text-sm leading-7 text-slate-500">Use this desk when you want a producer view: what may happen, how much income is at risk, what to do now, and which schemes may help.</p>
+                                <p class="text-sm leading-7 text-slate-700">यदि आप किसान या उत्पादक हैं, तो यहां आपको नुकसान का अनुमान, समाधान, और उपयोगी योजना जानकारी हिंदी में भी मिलेगी।</p>
+                            </div>
                             <div class="flex flex-wrap gap-3">
                                 <button id="farmerAnalyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-dataBlue px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">
                                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -846,8 +880,44 @@
     const cropModalScenario = document.getElementById('cropModalScenario');
     const applyCropPresetEnterprise = document.getElementById('applyCropPresetEnterprise');
     const applyCropPresetFarmer = document.getElementById('applyCropPresetFarmer');
+    const aboutImageOne = document.getElementById('aboutImageOne');
+    const aboutImageTwo = document.getElementById('aboutImageTwo');
+    const aboutCaptionOne = document.getElementById('aboutCaptionOne');
+    const aboutCaptionTwo = document.getElementById('aboutCaptionTwo');
 
     const riskLevelPriority = { High: 3, Medium: 2, Low: 1 };
+    const aboutGalleryItems = [
+        {
+            image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg',
+            fallback: '/images/crop-rice.svg',
+            alt: 'Rice field',
+            caption: 'Crop field monitoring'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-wheat.svg',
+            alt: 'Wheat sourcing landscape',
+            caption: 'Grain sourcing and storage'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-rice.svg',
+            alt: 'Agriculture field operations',
+            caption: 'Crop health and field visibility'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-coffee.svg',
+            alt: 'Farmer and machinery',
+            caption: 'Farmers and smart machinery'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1589923188651-268a9765e432?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-wheat.svg',
+            alt: 'Agro processing facility',
+            caption: 'Agro business and processing'
+        }
+    ];
     const inrFormatter = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
@@ -921,6 +991,38 @@
             block.innerHTML = words.map(word => `<span class="inline-block mx-[1px] rounded-md px-1 py-0.5 transition duration-150 hover:scale-110 hover:bg-emerald-50 hover:font-semibold hover:text-agri">${word}</span>`).join(' ');
             block.dataset.decorated = 'true';
         });
+    }
+
+    function setAboutImage(slot, item) {
+        if (!slot.image || !slot.caption || !item) {
+            return;
+        }
+
+        slot.image.src = item.image;
+        slot.image.alt = item.alt;
+        slot.image.onerror = () => {
+            slot.image.onerror = null;
+            slot.image.src = item.fallback;
+        };
+        slot.caption.textContent = item.caption;
+    }
+
+    function initializeAboutGallery() {
+        if (!aboutImageOne || !aboutImageTwo) {
+            return;
+        }
+
+        let galleryIndex = 0;
+        const renderGallery = () => {
+            const first = aboutGalleryItems[galleryIndex % aboutGalleryItems.length];
+            const second = aboutGalleryItems[(galleryIndex + 1) % aboutGalleryItems.length];
+            setAboutImage({ image: aboutImageOne, caption: aboutCaptionOne }, first);
+            setAboutImage({ image: aboutImageTwo, caption: aboutCaptionTwo }, second);
+            galleryIndex = (galleryIndex + 1) % aboutGalleryItems.length;
+        };
+
+        renderGallery();
+        window.setInterval(renderGallery, 3200);
     }
 
     function showError(message) {
@@ -1754,6 +1856,7 @@
     farmerPdfButton.addEventListener('click', () => generatePdfReport('Farmer'));
 
     decorateInteractiveCopy();
+    initializeAboutGallery();
     initializeCharts();
     updateRiskMap(initialMapPoints);
     renderHistory(initialRecentReports);
