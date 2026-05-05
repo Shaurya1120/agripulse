@@ -40,6 +40,9 @@ public class ProductionDataSourceConfig {
         try {
             URI uri = new URI(databaseUrl);
             String jdbcUrl = "jdbc:postgresql://" + uri.getHost() + ":" + uri.getPort() + uri.getPath();
+            if (StringUtils.hasText(uri.getQuery())) {
+                jdbcUrl = jdbcUrl + "?" + uri.getQuery();
+            }
             dataSource.setJdbcUrl(jdbcUrl);
 
             String[] credentials = extractCredentials(uri.getUserInfo());
