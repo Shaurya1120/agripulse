@@ -37,6 +37,7 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="min-h-screen bg-canvas font-sans text-ink">
@@ -1877,15 +1878,109 @@
 </html>`;
     }
 
+    async function waitForImages(container) {
+        const images = [...container.querySelectorAll('img')];
+        await Promise.all(images.map(image => {
+            if (image.complete && image.naturalWidth > 0) {
+                return Promise.resolve();
+            }
+
+            return new Promise(resolve => {
+                image.addEventListener('load', resolve, { once: true });
+                image.addEventListener('error', resolve, { once: true });
+            });
+        }));
+    }
+
+    async function generatePdfFromRenderedHtml(reportType, response, request, cropImage, priceChartImage, riskChartImage) {
+        const html = buildPrintReportHtml(reportType, response, request, cropImage, priceChartImage, riskChartImage);
+        const parser = new DOMParser();
+        const parsed = parser.parseFromString(html, 'text/html');
+        const styleTag = parsed.querySelector('style');
+        const pageNode = parsed.body.querySelector('.page');
+
+        if (!pageNode) {
+            throw new Error('Report layout could not be prepared for PDF export.');
+        }
+
+        const host = document.createElement('div');
+        host.style.position = 'fixed';
+        host.style.left = '-10000px';
+        host.style.top = '0';
+        host.style.width = '960px';
+        host.style.background = '#ffffff';
+        host.style.zIndex = '-1';
+
+        if (styleTag) {
+            host.appendChild(styleTag.cloneNode(true));
+        }
+        host.appendChild(pageNode.cloneNode(true));
+        document.body.appendChild(host);
+
+        try {
+            if (document.fonts?.ready) {
+                await document.fonts.ready;
+            }
+            await waitForImages(host);
+
+            const reportNode = host.querySelector('.page');
+            const canvas = await html2canvas(reportNode, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            });
+
+            const { jsPDF } = window.jspdf || {};
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+            const margin = 10;
+            const printableWidth = 190;
+            const printableHeight = 277;
+            const pageHeightPx = Math.floor((canvas.width * printableHeight) / printableWidth);
+            let offsetY = 0;
+            let pageIndex = 0;
+
+            while (offsetY < canvas.height) {
+                const sliceHeight = Math.min(pageHeightPx, canvas.height - offsetY);
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = sliceHeight;
+
+                const pageContext = pageCanvas.getContext('2d');
+                pageContext.drawImage(
+                    canvas,
+                    0,
+                    offsetY,
+                    canvas.width,
+                    sliceHeight,
+                    0,
+                    0,
+                    canvas.width,
+                    sliceHeight
+                );
+
+                if (pageIndex > 0) {
+                    pdf.addPage();
+                }
+
+                const pageImage = pageCanvas.toDataURL('image/jpeg', 0.96);
+                const renderedHeightMm = (sliceHeight * printableWidth) / canvas.width;
+                pdf.addImage(pageImage, 'JPEG', margin, margin, printableWidth, renderedHeightMm);
+
+                offsetY += sliceHeight;
+                pageIndex += 1;
+            }
+
+            const fileName = `agripulse-${fileSafeSlug(response.cropName)}-${fileSafeSlug(response.region)}-${fileSafeSlug(reportType)}.pdf`;
+            pdf.save(fileName);
+        } finally {
+            host.remove();
+        }
+    }
+
     async function generatePdfReport(reportType) {
         if (!latestReportContext) {
             showError('Run an analysis first so AgriPulse has a report to export.');
-            return;
-        }
-
-        const { jsPDF } = window.jspdf || {};
-        if (!jsPDF) {
-            showError('PDF export is not available right now. Please refresh and try again.');
             return;
         }
 
@@ -1895,115 +1990,12 @@
         const cropImage = cropAsset.pageImage;
         const priceChartImage = chartImageOrNull(priceTrendChart);
         const riskChartImage = chartImageOrNull(riskBreakdownChart);
-        const reportTitle = reportType === 'Farmer' ? 'AgriPulse Farmer Resilience Report' : 'AgriPulse Enterprise Risk Brief';
-        const weatherSummary = [weatherRegion.textContent, weatherTemperature.textContent, weatherWind.textContent].filter(Boolean).join(' | ');
-        const lossBreakdown = [
-            request.quantityTonnes ? `Quantity: ${request.quantityTonnes} tonnes` : null,
-            request.cropRatePerKgInr ? `Crop rate: INR ${request.cropRatePerKgInr} per kg` : null,
-            request.farmAreaAcres ? `Farm area: ${request.farmAreaAcres} acres` : null,
-            request.planningHorizonDays ? `Planning horizon: ${request.planningHorizonDays} days` : null,
-            response.estimatedLossPercent != null ? `Estimated loss: ${response.estimatedLossPercent}%` : null,
-            `Estimated rupee loss: ${formatCurrency(response.estimatedLossInr)}`
-        ].filter(Boolean);
 
-        const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
-        let y = 20;
-        const headerImageX = 150;
-        const headerImageY = 16;
-        const headerImageWidth = 36;
-        const headerImageHeight = 24;
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.setTextColor(22, 101, 52);
-        pdf.text('AGRIPULSE REPORT', 20, y);
-
-        const imageAdded = await addPdfImage(pdf, cropImage, headerImageX, headerImageY, headerImageWidth, headerImageHeight);
-        if (!imageAdded) {
-            pdf.setDrawColor(226, 232, 240);
-            pdf.roundedRect(headerImageX, headerImageY, headerImageWidth, headerImageHeight, 4, 4);
+        try {
+            await generatePdfFromRenderedHtml(reportType, response, request, cropImage, priceChartImage, riskChartImage);
+        } catch (error) {
+            showError(error.message || 'PDF export failed. Please refresh and try again.');
         }
-
-        y += 10;
-        pdf.setTextColor(15, 23, 42);
-        pdf.setFontSize(20);
-        const titleLines = pdf.splitTextToSize(reportTitle, 116);
-        pdf.text(titleLines, 20, y);
-        y += titleLines.length * 8 + 2;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10.5);
-        const introLines = [
-            `Crop: ${response.cropName}`,
-            `Location: ${response.region}`,
-            `Risk level: ${response.riskLevel}`,
-            `Primary threat: ${response.primaryThreat || 'Not specified'}`,
-            `Weather: ${weatherSummary || 'Not available'}`
-        ];
-        introLines.forEach(line => {
-            const wrapped = pdf.splitTextToSize(line, 116);
-            pdf.text(wrapped, 20, y);
-            y += wrapped.length * 5 + 1;
-        });
-
-        y = Math.max(y + 2, headerImageY + headerImageHeight + 10);
-        y = writePdfSection(pdf, 'What is happening?', [response.disruptionSummary || 'No disruption summary returned.'], y);
-        y = writePdfSection(pdf, 'Actual problem in this area', [response.detailedProblem || 'No detailed problem explanation returned.'], y);
-        y = writePdfSection(pdf, 'Risk factors', toPdfBulletLines(response.riskFactors, 'No risk factor returned.'), y);
-        y = writePdfSection(
-                pdf,
-                reportType === 'Farmer' ? 'Farmer action plan' : 'Buyer / exporter action plan',
-                toPdfBulletLines(reportType === 'Farmer' ? response.farmerActions : response.enterpriseActions, reportType === 'Farmer' ? 'No farmer action returned.' : 'No enterprise action returned.'),
-                y
-        );
-        y = writePdfSection(pdf, 'Plan B strategy', [response.mitigationStrategy || 'No mitigation strategy returned.'], y);
-        y = writePdfSection(pdf, 'Loss calculation', lossBreakdown.length ? lossBreakdown : ['No loss detail available.'], y);
-
-        if (reportType === 'Farmer') {
-            y = writePdfSection(pdf, 'Government schemes', toPdfBulletLines(response.governmentSchemes, 'No scheme note returned.'), y);
-            y = writePdfSection(pdf, 'Hindi summary', [response.hindiDisruptionSummary || 'हिंदी सारांश उपलब्ध नहीं है।'], y);
-            y = writePdfSection(pdf, 'Hindi problem', [response.hindiDetailedProblem || 'हिंदी समस्या विवरण उपलब्ध नहीं है।'], y);
-            y = writePdfSection(pdf, 'Hindi actions', toPdfBulletLines(response.hindiFarmerActions?.length ? response.hindiFarmerActions : response.farmerActions, 'कोई किसान कार्ययोजना उपलब्ध नहीं है।'), y);
-            y = writePdfSection(pdf, 'Hindi scheme notes', toPdfBulletLines(response.hindiGovernmentSchemes?.length ? response.hindiGovernmentSchemes : response.governmentSchemes, 'कोई योजना सूचना उपलब्ध नहीं है।'), y);
-        } else {
-            y = writePdfSection(pdf, 'Executive note', [riskNarrative(response.riskLevel, response.primaryThreat)], y);
-        }
-
-        if (priceChartImage || riskChartImage) {
-            y = ensurePdfSpace(pdf, y, 90);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(13);
-            pdf.text('Charts', 20, y);
-            y += 8;
-
-            if (priceChartImage) {
-                const added = await addPdfImage(pdf, priceChartImage, 20, y, 80, 48);
-                if (added) {
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.setFontSize(10);
-                    pdf.text('Price trend chart', 20, y + 54);
-                }
-            }
-
-            if (riskChartImage) {
-                const added = await addPdfImage(pdf, riskChartImage, 110, y, 80, 48);
-                if (added) {
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.setFontSize(10);
-                    pdf.text('Risk breakdown chart', 110, y + 54);
-                }
-            }
-
-            y += 62;
-        }
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.setTextColor(100, 116, 139);
-        pdf.text('Developed by Shaurya Rathi', 20, 286);
-
-        const fileName = `agripulse-${fileSafeSlug(response.cropName)}-${fileSafeSlug(response.region)}-${fileSafeSlug(reportType)}.pdf`;
-        pdf.save(fileName);
     }
 
     enterpriseForm.addEventListener('submit', event => {
