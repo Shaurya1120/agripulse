@@ -3,202 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriPulse Global Risk Engine</title>
+    <title>AgriPulse Intelligence Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        surface: '#FFFFFF',
+                        canvas: '#F8FAFC',
+                        line: '#F3F4F6',
+                        agri: '#166534',
+                        agriSoft: '#E8F5EC',
+                        dataBlue: '#0369A1',
+                        ink: '#0F172A',
+                        muted: '#64748B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    boxShadow: {
+                        soft: '0 18px 45px rgba(15, 23, 42, 0.08)',
+                        panel: '0 10px 30px rgba(15, 23, 42, 0.06)'
+                    }
+                }
+            }
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-<div class="mx-auto max-w-7xl px-6 py-10">
-    <header class="mb-10 flex flex-col gap-6 rounded-3xl border border-emerald-500/20 bg-gradient-to-r from-slate-900 via-emerald-950 to-lime-950 p-8 shadow-2xl shadow-emerald-950/30">
-        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-                <p class="text-sm uppercase tracking-[0.35em] text-emerald-300">AI Supply Chain Command Center</p>
-                <h1 class="mt-2 text-4xl font-black tracking-tight text-white md:text-5xl">AgriPulse</h1>
-                <p class="mt-4 max-w-3xl text-base text-slate-300">
-                    Run fast crop-risk analysis, surface likely disruption patterns, and keep a Plan B ready for global agri-business operations.
-                </p>
-            </div>
-            <div class="rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-                Example scenarios: Turmeric in Erode, Basmati Rice in Punjab, Coffee in Karnataka
-            </div>
-        </div>
-    </header>
+<body class="min-h-screen bg-canvas font-sans text-ink">
+<div class="relative overflow-hidden">
+    <div class="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-emerald-50 via-white to-transparent"></div>
 
-    <section class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-        <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl">
-            <div class="mb-6 flex items-center justify-between">
+    <nav class="sticky top-0 z-30 border-b border-line/90 bg-white/90 backdrop-blur">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-3">
+                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-agri text-white shadow-panel">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 19c0-2.8 2.2-5 5-5h4"></path>
+                        <path d="M9 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                        <path d="M17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
+                        <path d="M14 10V5l4 1.5V10"></path>
+                        <path d="M14 7h4"></path>
+                    </svg>
+                </div>
                 <div>
-                    <h2 class="text-2xl font-bold text-white">Analyze Risk</h2>
-                    <p class="mt-1 text-sm text-slate-400">Enter a crop and region to generate an AI-backed risk report.</p>
-                </div>
-                <div id="spinner" class="hidden items-center gap-2 rounded-full bg-emerald-400/10 px-4 py-2 text-sm text-emerald-200">
-                    <span class="h-2.5 w-2.5 animate-ping rounded-full bg-emerald-300"></span>
-                    AI is thinking...
+                    <p class="text-xs font-semibold uppercase tracking-[0.28em] text-agri">Agri Supply Chain Intelligence</p>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-ink">AgriPulse</h1>
                 </div>
             </div>
 
-            <form id="riskForm" class="grid gap-4 md:grid-cols-2">
-                <label class="block">
-                    <span class="mb-2 block text-sm font-medium text-slate-300">Crop Name</span>
-                    <input id="cropName" name="cropName" type="text" placeholder="Basmati Rice"
-                           class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-emerald-400">
-                </label>
-                <label class="block">
-                    <span class="mb-2 block text-sm font-medium text-slate-300">Region</span>
-                    <input id="region" name="region" type="text" placeholder="Punjab"
-                           class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-emerald-400">
-                </label>
-                <div class="md:col-span-2 flex flex-wrap items-center gap-3">
-                    <button type="submit" class="rounded-2xl bg-emerald-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-300">
-                        Analyze Supply Chain
-                    </button>
-                    <p class="text-sm text-slate-400">The engine also triggers an emergency alert tool whenever the model classifies a case as High risk.</p>
-                </div>
-            </form>
+            <div class="hidden items-center gap-6 lg:flex">
+                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#analysis">Analysis</a>
+                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#pulse">The Pulse</a>
+                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#history">Disruption Logs</a>
+                <button id="pdfButton" type="button" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-dataBlue hover:text-dataBlue">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"></path>
+                        <path d="M14 2v6h6"></path>
+                        <path d="M8 13h8"></path>
+                        <path d="M8 17h5"></path>
+                    </svg>
+                    Generate PDF Report
+                </button>
+            </div>
+        </div>
+    </nav>
 
-            <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100"></div>
+    <main class="relative mx-auto max-w-7xl px-6 py-8 lg:py-10">
+        <section id="analysis" class="grid gap-8 lg:grid-cols-[1.55fr_0.95fr]">
+            <article class="overflow-hidden rounded-[32px] border border-emerald-100 bg-white shadow-soft">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-emerald-50/90"></div>
+                    <div class="relative p-8 md:p-10">
+                        <div class="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                            <div class="max-w-2xl">
+                                <p class="text-sm font-semibold uppercase tracking-[0.32em] text-agri">AI Command Center</p>
+                                <h2 class="mt-3 text-4xl font-extrabold tracking-tight text-slate-950 md:text-5xl">Analyze agricultural risk with executive clarity.</h2>
+                                <p class="mt-4 max-w-xl text-base leading-7 text-slate-600">
+                                    Model region-specific disruption risk, estimated price pressure, and plan B strategy in one polished operating console.
+                                </p>
+                            </div>
+                            <div class="rounded-3xl border border-emerald-200 bg-white/80 px-5 py-4 text-sm text-slate-700 shadow-sm backdrop-blur">
+                                <p class="font-semibold text-agri">Suggested scenarios</p>
+                                <p class="mt-2">Turmeric in Erode, Basmati Rice in Punjab, Coffee in Karnataka</p>
+                            </div>
+                        </div>
 
-            <article id="resultCard" class="mt-6 hidden rounded-3xl border border-emerald-400/20 bg-emerald-400/5 p-6">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <p class="text-sm uppercase tracking-[0.3em] text-emerald-300">Latest AI Report</p>
-                        <h3 id="resultTitle" class="mt-2 text-2xl font-bold text-white"></h3>
+                        <form id="riskForm" class="grid gap-5">
+                            <div class="grid gap-4 md:grid-cols-2">
+                                <label class="rounded-3xl border border-line bg-white/90 p-4 shadow-sm">
+                                    <div class="mb-3 flex items-center gap-3">
+                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-agriSoft text-agri">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 3v18"></path>
+                                                <path d="M8 7c0 2 1.5 3.5 4 4 2.5-.5 4-2 4-4"></path>
+                                                <path d="M7 13c0 2 2 4 5 5 3-.8 5-3 5-5"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-900">Crop</p>
+                                            <p class="text-xs text-slate-500">What commodity are we tracking?</p>
+                                        </div>
+                                    </div>
+                                    <input id="cropName" name="cropName" type="text" placeholder="Basmati Rice"
+                                           class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-agri focus:bg-white focus:ring-4 focus:ring-emerald-100">
+                                </label>
+
+                                <label class="rounded-3xl border border-line bg-white/90 p-4 shadow-sm">
+                                    <div class="mb-3 flex items-center gap-3">
+                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-dataBlue">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="9"></circle>
+                                                <path d="M3 12h18"></path>
+                                                <path d="M12 3a14.5 14.5 0 0 1 0 18"></path>
+                                                <path d="M12 3a14.5 14.5 0 0 0 0 18"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-900">Region</p>
+                                            <p class="text-xs text-slate-500">Which geography should the engine evaluate?</p>
+                                        </div>
+                                    </div>
+                                    <input id="region" name="region" type="text" placeholder="Punjab"
+                                           class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                </label>
+                            </div>
+
+                            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div class="flex items-center gap-3 text-sm text-slate-500">
+                                    <span id="spinner" class="hidden items-center gap-2 rounded-full bg-slate-100 px-4 py-2 font-medium text-slate-700">
+                                        <span class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-agri"></span>
+                                        Modeling live supply-chain conditions...
+                                    </span>
+                                    <span class="max-w-md">AgriPulse automatically escalates emergency alerts when high-risk patterns are detected.</span>
+                                </div>
+
+                                <button id="analyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-agri px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 20V10"></path>
+                                        <path d="M18 20V4"></path>
+                                        <path d="M6 20v-4"></path>
+                                    </svg>
+                                    <span id="analyzeButtonLabel">Analyze Supply Chain</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"></div>
                     </div>
-                    <span id="riskBadge" class="rounded-full px-4 py-2 text-sm font-semibold"></span>
                 </div>
-                <p id="mitigationStrategy" class="mt-4 text-slate-200"></p>
             </article>
-        </div>
 
-        <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl">
-            <div class="mb-5">
-                <h2 class="text-2xl font-bold text-white">Global Risk Map</h2>
-                <p class="mt-1 text-sm text-slate-400">A simple operational view of regions with concentrated high-risk activity.</p>
+            <aside class="space-y-6">
+                <section class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">Live Weather</p>
+                            <h3 class="mt-2 text-2xl font-bold text-slate-950">Region climate pulse</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-500">Auto-refreshes when you update the selected region.</p>
+                        </div>
+                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-dataBlue">
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 16a4 4 0 1 1 .9-7.9A5 5 0 0 1 16.8 10H17a3 3 0 1 1 0 6Z"></path>
+                                <path d="M8 19l.01 0"></path>
+                                <path d="M8 22l.01 0"></path>
+                                <path d="M16 19l.01 0"></path>
+                                <path d="M16 22l.01 0"></path>
+                                <path d="M12 20l.01 0"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-2xl border border-line bg-slate-50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Region</p>
+                            <p id="weatherRegion" class="mt-2 text-lg font-semibold text-slate-900">Waiting for a region</p>
+                            <p id="weatherSummary" class="mt-1 text-sm text-slate-500">Enter a region to pull the latest weather snapshot.</p>
+                        </div>
+                        <div class="rounded-2xl border border-line bg-slate-50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Current Conditions</p>
+                            <p id="weatherTemperature" class="mt-2 text-3xl font-extrabold text-slate-950">--</p>
+                            <p id="weatherWind" class="mt-1 text-sm text-slate-500">Wind and humidity will appear here.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="resultCard" class="hidden rounded-[28px] border border-emerald-100 bg-white p-6 shadow-panel">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Latest Intelligence Brief</p>
+                            <h3 id="resultTitle" class="mt-2 text-2xl font-bold text-slate-950"></h3>
+                            <p id="resultSubtitle" class="mt-2 max-w-xl text-sm leading-6 text-slate-500">Operational decision support for the latest selected route.</p>
+                        </div>
+                        <span id="riskBadge" class="rounded-full px-4 py-2 text-sm font-semibold"></span>
+                    </div>
+
+                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-2xl border border-line bg-agriSoft p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Plan B Strategy</p>
+                            <p id="mitigationStrategy" class="mt-2 text-sm leading-7 text-slate-700"></p>
+                        </div>
+                        <div class="rounded-2xl border border-line bg-sky-50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Executive Note</p>
+                            <p id="executiveSignal" class="mt-2 text-sm leading-7 text-slate-700"></p>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </section>
+
+        <section id="pulse" class="mt-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+            <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
+                <div class="mb-5 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">The Pulse</p>
+                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Price Trends</h3>
+                        <p class="mt-1 text-sm text-slate-500">A clean index of estimated price pressure derived from recent disruption severity.</p>
+                    </div>
+                    <div class="rounded-2xl border border-line bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                        Updated from the most recent historical logs
+                    </div>
+                </div>
+                <canvas id="priceTrendChart" height="140"></canvas>
+            </article>
+
+            <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
+                <div class="mb-5 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Risk Composition</p>
+                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Risk Factor Breakdown</h3>
+                        <p class="mt-1 text-sm text-slate-500">Signals estimated from the language inside recent plan B strategies.</p>
+                    </div>
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-agriSoft text-agri">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"></path>
+                            <path d="m7 14 3-3 3 2 5-6"></path>
+                        </svg>
+                    </div>
+                </div>
+                <canvas id="riskBreakdownChart" height="250"></canvas>
+            </article>
+        </section>
+
+        <section class="mt-6 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+            <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
+                <div class="mb-5 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">Geo Signal</p>
+                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Global Risk Map</h3>
+                        <p class="mt-1 text-sm text-slate-500">High-risk concentration by region from the latest reports in the database.</p>
+                    </div>
+                    <div class="rounded-2xl border border-line bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                        Regions update after every new analysis
+                    </div>
+                </div>
+                <canvas id="riskMapChart" height="220"></canvas>
+            </article>
+
+            <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
+                <div class="mb-5 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Operational Summary</p>
+                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Command Metrics</h3>
+                    </div>
+                    <div class="text-sm text-slate-500">Live from current dashboard data</div>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-3">
+                    <div class="rounded-3xl border border-line bg-slate-50 p-5">
+                        <p class="text-sm font-medium text-slate-500">Tracked Regions</p>
+                        <p id="trackedRegionsMetric" class="mt-3 text-3xl font-extrabold text-slate-950">0</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-slate-50 p-5">
+                        <p class="text-sm font-medium text-slate-500">High-Risk Cases</p>
+                        <p id="highRiskMetric" class="mt-3 text-3xl font-extrabold text-rose-600">0</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-slate-50 p-5">
+                        <p class="text-sm font-medium text-slate-500">Latest Price Index</p>
+                        <p id="priceIndexMetric" class="mt-3 text-3xl font-extrabold text-dataBlue">0</p>
+                    </div>
+                </div>
+
+                <div class="mt-5 rounded-3xl border border-line bg-gradient-to-r from-slate-50 via-white to-emerald-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Field Guidance</p>
+                    <p class="mt-3 text-sm leading-7 text-slate-600">
+                        This workspace is optimized for fast executive scanability: weather pulse, risk composition, disruption logs, and printable summaries live in one light-themed operational surface.
+                    </p>
+                </div>
+            </article>
+        </section>
+
+        <section id="history" class="mt-8 rounded-[32px] border border-line bg-white p-6 shadow-panel">
+            <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">Historical Disruption Logs</p>
+                    <h3 class="mt-2 text-2xl font-bold text-slate-950">Sortable operational memory</h3>
+                    <p class="mt-1 text-sm text-slate-500">Sort by crop, region, risk, or plan B strategy to scan prior disruption patterns.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button id="prevPage" class="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-dataBlue hover:text-dataBlue disabled:opacity-40">Previous</button>
+                    <button id="nextPage" class="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-dataBlue hover:text-dataBlue disabled:opacity-40">Next</button>
+                </div>
             </div>
-            <canvas id="riskMapChart" height="260"></canvas>
-        </div>
-    </section>
 
-    <section class="mt-8 rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl">
-        <div class="mb-5 flex items-center justify-between">
-            <div>
-                <h2 class="text-2xl font-bold text-white">Risk History</h2>
-                <p class="mt-1 text-sm text-slate-400">Recent analyses across crops and regions.</p>
+            <div class="overflow-hidden rounded-3xl border border-line">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left">
+                        <thead class="bg-slate-50 text-xs uppercase tracking-[0.22em] text-slate-500">
+                        <tr>
+                            <th class="px-5 py-4">
+                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="cropName">
+                                    Crop
+                                    <span class="text-slate-300">↕</span>
+                                </button>
+                            </th>
+                            <th class="px-5 py-4">
+                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="region">
+                                    Region
+                                    <span class="text-slate-300">↕</span>
+                                </button>
+                            </th>
+                            <th class="px-5 py-4">
+                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="riskLevel">
+                                    Risk
+                                    <span class="text-slate-300">↕</span>
+                                </button>
+                            </th>
+                            <th class="px-5 py-4">
+                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="mitigationStrategy">
+                                    Plan B Strategy
+                                    <span class="text-slate-300">↕</span>
+                                </button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-line bg-white text-sm text-slate-700">
+                        <tr th:each="report : ${dashboard.recentReports}">
+                            <td class="px-5 py-4" th:text="${report.cropName}">Basmati Rice</td>
+                            <td class="px-5 py-4" th:text="${report.region}">Punjab</td>
+                            <td class="px-5 py-4" th:text="${report.riskLevel}">High</td>
+                            <td class="px-5 py-4" th:text="${report.mitigationStrategy}">Build alternate procurement routes.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="flex gap-3">
-                <button id="prevPage" class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-40">Previous</button>
-                <button id="nextPage" class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-40">Next</button>
+
+            <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <p id="pageLabel" class="text-sm text-slate-500">Page 1</p>
+                <p class="text-sm text-slate-400">Tip: sort the table to compare regions with similar mitigation patterns.</p>
             </div>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-800 text-left">
-                <thead>
-                <tr class="text-sm uppercase tracking-wide text-slate-400">
-                    <th class="px-4 py-3">Crop</th>
-                    <th class="px-4 py-3">Region</th>
-                    <th class="px-4 py-3">Risk</th>
-                    <th class="px-4 py-3">Plan B</th>
-                </tr>
-                </thead>
-                <tbody id="historyTableBody" class="divide-y divide-slate-800 text-sm text-slate-200">
-                <tr th:each="report : ${dashboard.recentReports}">
-                    <td class="px-4 py-4" th:text="${report.cropName}">Basmati Rice</td>
-                    <td class="px-4 py-4" th:text="${report.region}">Punjab</td>
-                    <td class="px-4 py-4" th:text="${report.riskLevel}">High</td>
-                    <td class="px-4 py-4" th:text="${report.mitigationStrategy}">Build alternate procurement routes.</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <p id="pageLabel" class="mt-4 text-sm text-slate-400">Page 1</p>
-    </section>
-
-    <section class="mt-8 grid gap-6 lg:grid-cols-2">
-        <article class="rounded-3xl border border-amber-400/20 bg-amber-400/5 p-6">
-            <h2 class="text-xl font-bold text-amber-100">Plan B for Turmeric</h2>
-            <p class="mt-3 text-sm leading-7 text-amber-50/90">
-                When turmeric supply is squeezed by heatwaves, disease pressure, or freight disruptions, AgriPulse should prioritize alternate sourcing clusters,
-                dried inventory buffers, and early transport contracts to reduce downstream volatility.
-            </p>
-        </article>
-        <article class="rounded-3xl border border-sky-400/20 bg-sky-400/5 p-6">
-            <h2 class="text-xl font-bold text-sky-100">Plan B for Basmati Rice</h2>
-            <p class="mt-3 text-sm leading-7 text-sky-50/90">
-                For basmati rice, the Plan B should focus on procurement diversification, export-lane monitoring, and warehouse positioning near high-demand markets
-                when monsoon shocks or policy moves threaten supply timing.
-            </p>
-        </article>
-    </section>
+        </section>
+    </main>
 </div>
 
 <script th:inline="javascript">
     const dashboard = /*[[${dashboard}]]*/ {};
     const initialMapPoints = dashboard.riskMapPoints || [];
+    const initialRecentReports = dashboard.recentReports || [];
+
     let currentPage = 0;
     let totalPages = 1;
+    let currentHistoryItems = [...initialRecentReports];
+    let currentSort = { key: 'riskLevel', direction: 'desc' };
+    let latestRiskResult = null;
 
     const form = document.getElementById('riskForm');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const analyzeButtonLabel = document.getElementById('analyzeButtonLabel');
     const spinner = document.getElementById('spinner');
     const errorBanner = document.getElementById('errorBanner');
     const resultCard = document.getElementById('resultCard');
     const resultTitle = document.getElementById('resultTitle');
+    const resultSubtitle = document.getElementById('resultSubtitle');
     const riskBadge = document.getElementById('riskBadge');
     const mitigationStrategy = document.getElementById('mitigationStrategy');
+    const executiveSignal = document.getElementById('executiveSignal');
     const historyTableBody = document.getElementById('historyTableBody');
     const pageLabel = document.getElementById('pageLabel');
     const prevPageButton = document.getElementById('prevPage');
     const nextPageButton = document.getElementById('nextPage');
+    const pdfButton = document.getElementById('pdfButton');
+
+    const weatherRegion = document.getElementById('weatherRegion');
+    const weatherSummary = document.getElementById('weatherSummary');
+    const weatherTemperature = document.getElementById('weatherTemperature');
+    const weatherWind = document.getElementById('weatherWind');
+
+    const trackedRegionsMetric = document.getElementById('trackedRegionsMetric');
+    const highRiskMetric = document.getElementById('highRiskMetric');
+    const priceIndexMetric = document.getElementById('priceIndexMetric');
+
+    const riskLevelPriority = { High: 3, Medium: 2, Low: 1 };
+
+    const chartDefaults = {
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#475569',
+                    font: {
+                        family: 'Inter'
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    color: '#64748B',
+                    font: { family: 'Inter' }
+                },
+                grid: { color: '#EEF2F7' }
+            },
+            y: {
+                ticks: {
+                    color: '#64748B',
+                    font: { family: 'Inter' },
+                    precision: 0
+                },
+                grid: { color: '#EEF2F7' }
+            }
+        }
+    };
+
+    const priceTrendChart = new Chart(document.getElementById('priceTrendChart'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Estimated Price Trend Index',
+                data: [],
+                borderColor: '#0369A1',
+                backgroundColor: 'rgba(3, 105, 161, 0.12)',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 4,
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            ...chartDefaults
+        }
+    });
+
+    const riskBreakdownChart = new Chart(document.getElementById('riskBreakdownChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Weather', 'Logistics', 'Market', 'Storage'],
+            datasets: [{
+                label: 'Signal Strength',
+                data: [0, 0, 0, 0],
+                backgroundColor: ['#166534', '#0369A1', '#0EA5E9', '#86EFAC'],
+                borderRadius: 14
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            ...chartDefaults
+        }
+    });
 
     const riskMapChart = new Chart(document.getElementById('riskMapChart'), {
         type: 'bar',
         data: {
-            labels: initialMapPoints.map(point => point.region),
+            labels: [],
             datasets: [
                 {
                     label: 'High Risk Reports',
-                    data: initialMapPoints.map(point => point.highRiskReports),
-                    backgroundColor: 'rgba(74, 222, 128, 0.75)',
+                    data: [],
+                    backgroundColor: '#166534',
                     borderRadius: 14
                 },
                 {
                     label: 'Total Reports',
-                    data: initialMapPoints.map(point => point.totalReports),
-                    backgroundColor: 'rgba(148, 163, 184, 0.35)',
+                    data: [],
+                    backgroundColor: 'rgba(3, 105, 161, 0.2)',
                     borderRadius: 14
                 }
             ]
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#e2e8f0'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { color: '#cbd5e1' },
-                    grid: { color: 'rgba(148, 163, 184, 0.08)' }
-                },
-                y: {
-                    ticks: { color: '#cbd5e1', precision: 0 },
-                    grid: { color: 'rgba(148, 163, 184, 0.08)' }
-                }
-            }
+            maintainAspectRatio: false,
+            ...chartDefaults
         }
     });
 
     function badgeClassesForRisk(riskLevel) {
         if (riskLevel === 'High') {
-            return 'bg-rose-500/15 text-rose-100 border border-rose-500/30';
+            return 'bg-rose-50 text-rose-700 border border-rose-200';
         }
         if (riskLevel === 'Medium') {
-            return 'bg-amber-400/15 text-amber-100 border border-amber-400/30';
+            return 'bg-amber-50 text-amber-700 border border-amber-200';
         }
-        return 'bg-emerald-400/15 text-emerald-100 border border-emerald-400/30';
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    }
+
+    function riskNarrative(riskLevel) {
+        if (riskLevel === 'High') {
+            return 'High disruption probability detected. Move quickly on alternate routes, supplier diversification, and committed inventory cover.';
+        }
+        if (riskLevel === 'Medium') {
+            return 'Moderate pressure detected. Tighten supplier monitoring and pre-position contingency capacity before costs rise.';
+        }
+        return 'Conditions look comparatively stable. Maintain watchlists and preserve optionality without overcommitting working capital.';
     }
 
     function showError(message) {
@@ -211,28 +528,121 @@
         errorBanner.textContent = '';
     }
 
+    function buildPriceTrendSeries(items) {
+        const history = [...items].reverse();
+        let baseline = 94;
+
+        return history.map((item, index) => {
+            const riskWeight = riskLevelPriority[item.riskLevel] || 1;
+            baseline += riskWeight * 4 + index;
+            return {
+                label: `${item.cropName} • ${item.region}`,
+                value: baseline
+            };
+        });
+    }
+
+    function buildRiskBreakdown(items) {
+        const categories = {
+            Weather: ['heat', 'monsoon', 'rain', 'weather', 'climate', 'temperature', 'storm'],
+            Logistics: ['transport', 'freight', 'route', 'shipment', 'supplier', 'delivery', 'warehouse'],
+            Market: ['price', 'hedge', 'market', 'export', 'demand', 'cost'],
+            Storage: ['storage', 'inventory', 'buffer', 'cold', 'stock']
+        };
+
+        const totals = { Weather: 0, Logistics: 0, Market: 0, Storage: 0 };
+
+        items.forEach(item => {
+            const text = `${item.cropName} ${item.region} ${item.mitigationStrategy}`.toLowerCase();
+            Object.entries(categories).forEach(([category, keywords]) => {
+                const matches = keywords.filter(keyword => text.includes(keyword)).length;
+                totals[category] += matches > 0 ? matches : (riskLevelPriority[item.riskLevel] || 1) - 1;
+            });
+        });
+
+        return Object.values(totals);
+    }
+
+    function updateRiskMap(points) {
+        riskMapChart.data.labels = points.map(point => point.region);
+        riskMapChart.data.datasets[0].data = points.map(point => point.highRiskReports);
+        riskMapChart.data.datasets[1].data = points.map(point => point.totalReports);
+        riskMapChart.update();
+    }
+
+    function updatePulseCharts(items) {
+        const safeItems = items.length ? items : initialRecentReports;
+        const priceSeries = buildPriceTrendSeries(safeItems);
+        const riskBreakdown = buildRiskBreakdown(safeItems);
+
+        priceTrendChart.data.labels = priceSeries.map(item => item.label);
+        priceTrendChart.data.datasets[0].data = priceSeries.map(item => item.value);
+        priceTrendChart.update();
+
+        riskBreakdownChart.data.datasets[0].data = riskBreakdown;
+        riskBreakdownChart.update();
+
+        const trackedRegions = new Set(safeItems.map(item => item.region)).size;
+        const highRiskCount = safeItems.filter(item => item.riskLevel === 'High').length;
+        const latestIndex = priceSeries.length ? priceSeries[priceSeries.length - 1].value : 0;
+
+        trackedRegionsMetric.textContent = trackedRegions;
+        highRiskMetric.textContent = highRiskCount;
+        priceIndexMetric.textContent = latestIndex;
+    }
+
+    function sortHistoryItems(items) {
+        const sortedItems = [...items].sort((left, right) => {
+            let leftValue = left[currentSort.key] || '';
+            let rightValue = right[currentSort.key] || '';
+
+            if (currentSort.key === 'riskLevel') {
+                leftValue = riskLevelPriority[leftValue] || 0;
+                rightValue = riskLevelPriority[rightValue] || 0;
+            } else {
+                leftValue = String(leftValue).toLowerCase();
+                rightValue = String(rightValue).toLowerCase();
+            }
+
+            if (leftValue < rightValue) {
+                return currentSort.direction === 'asc' ? -1 : 1;
+            }
+            if (leftValue > rightValue) {
+                return currentSort.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+
+        return sortedItems;
+    }
+
     function renderHistory(items) {
+        const sortedItems = sortHistoryItems(items);
+        currentHistoryItems = sortedItems;
         historyTableBody.innerHTML = '';
 
-        if (!items.length) {
-            historyTableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-slate-400">No history yet. Run your first analysis above.</td></tr>';
+        if (!sortedItems.length) {
+            historyTableBody.innerHTML = '<tr><td colspan="4" class="px-5 py-8 text-sm text-slate-400">No disruption history yet. Run your first analysis to populate the operational log.</td></tr>';
             return;
         }
 
-        items.forEach(item => {
+        sortedItems.forEach(item => {
             const row = document.createElement('tr');
+            row.className = 'transition hover:bg-slate-50';
             row.innerHTML = `
-                <td class="px-4 py-4">${item.cropName}</td>
-                <td class="px-4 py-4">${item.region}</td>
-                <td class="px-4 py-4">${item.riskLevel}</td>
-                <td class="px-4 py-4">${item.mitigationStrategy}</td>
+                <td class="px-5 py-4 font-medium text-slate-900">${item.cropName}</td>
+                <td class="px-5 py-4">${item.region}</td>
+                <td class="px-5 py-4">
+                    <span class="${badgeClassesForRisk(item.riskLevel)} inline-flex rounded-full px-3 py-1 text-xs font-semibold">${item.riskLevel}</span>
+                </td>
+                <td class="px-5 py-4 leading-6 text-slate-600">${item.mitigationStrategy}</td>
             `;
             historyTableBody.appendChild(row);
         });
     }
 
     async function loadHistory(page) {
-        const response = await fetch(`/api/risk/history?page=${page}&size=5`);
+        const response = await fetch(`/api/risk/history?page=${page}&size=8`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -245,6 +655,88 @@
         prevPageButton.disabled = currentPage === 0;
         nextPageButton.disabled = currentPage + 1 >= totalPages;
         renderHistory(data.items || []);
+        updatePulseCharts(data.items || []);
+    }
+
+    function updateLatestResult(data) {
+        latestRiskResult = data;
+        resultCard.classList.remove('hidden');
+        resultTitle.textContent = `${data.cropName} in ${data.region}`;
+        resultSubtitle.textContent = `AI risk rating generated for ${data.region} with an operational response designed for supply chain teams.`;
+        riskBadge.textContent = data.riskLevel;
+        riskBadge.className = `rounded-full px-4 py-2 text-sm font-semibold ${badgeClassesForRisk(data.riskLevel)}`;
+        mitigationStrategy.textContent = data.mitigationStrategy;
+        executiveSignal.textContent = riskNarrative(data.riskLevel);
+    }
+
+    async function fetchWeather(region) {
+        if (!region || !region.trim()) {
+            weatherRegion.textContent = 'Waiting for a region';
+            weatherSummary.textContent = 'Enter a region to pull the latest weather snapshot.';
+            weatherTemperature.textContent = '--';
+            weatherWind.textContent = 'Wind and humidity will appear here.';
+            return;
+        }
+
+        weatherRegion.textContent = region;
+        weatherSummary.textContent = 'Looking up live weather conditions...';
+        weatherTemperature.textContent = '--';
+        weatherWind.textContent = 'Forecast details loading...';
+
+        try {
+            const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(region)}&count=1&language=en&format=json`);
+            const geoData = await geoResponse.json();
+            const location = geoData.results?.[0];
+
+            if (!location) {
+                throw new Error('Region not found in the weather service.');
+            }
+
+            const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
+            const weatherData = await weatherResponse.json();
+            const current = weatherData.current;
+
+            weatherRegion.textContent = `${location.name}, ${location.country || ''}`.trim().replace(/,\s$/, '');
+            weatherSummary.textContent = `Live weather widget for the selected operating geography.`;
+            weatherTemperature.textContent = `${Math.round(current.temperature_2m)}°C`;
+            weatherWind.textContent = `Wind ${Math.round(current.wind_speed_10m)} km/h • code ${current.weather_code}`;
+        } catch (error) {
+            weatherSummary.textContent = error.message || 'Weather data is unavailable right now.';
+            weatherWind.textContent = 'Try a more specific region name.';
+        }
+    }
+
+    async function generatePdfReport() {
+        const { jsPDF } = window.jspdf;
+        const documentPdf = new jsPDF();
+        const crop = document.getElementById('cropName').value || 'Not specified';
+        const region = document.getElementById('region').value || 'Not specified';
+        const riskLevel = latestRiskResult?.riskLevel || 'No live result yet';
+        const strategy = latestRiskResult?.mitigationStrategy || 'Run an analysis first to generate a formal mitigation strategy.';
+        const weatherLine = `${weatherRegion.textContent} | ${weatherTemperature.textContent} | ${weatherWind.textContent}`;
+
+        documentPdf.setFont('helvetica', 'bold');
+        documentPdf.setFontSize(22);
+        documentPdf.text('AgriPulse Risk Brief', 20, 22);
+
+        documentPdf.setFont('helvetica', 'normal');
+        documentPdf.setFontSize(11);
+        documentPdf.text(`Crop: ${crop}`, 20, 38);
+        documentPdf.text(`Region: ${region}`, 20, 46);
+        documentPdf.text(`Risk Level: ${riskLevel}`, 20, 54);
+        documentPdf.text(`Weather Snapshot: ${weatherLine}`, 20, 62, { maxWidth: 170 });
+
+        documentPdf.setFont('helvetica', 'bold');
+        documentPdf.text('Plan B Strategy', 20, 82);
+        documentPdf.setFont('helvetica', 'normal');
+        documentPdf.text(documentPdf.splitTextToSize(strategy, 170), 20, 90);
+
+        documentPdf.setFont('helvetica', 'bold');
+        documentPdf.text('Executive Narrative', 20, 124);
+        documentPdf.setFont('helvetica', 'normal');
+        documentPdf.text(documentPdf.splitTextToSize(riskNarrative(riskLevel), 170), 20, 132);
+
+        documentPdf.save(`agripulse-${crop.toLowerCase().replace(/\s+/g, '-')}-${region.toLowerCase().replace(/\s+/g, '-')}.pdf`);
     }
 
     form.addEventListener('submit', async (event) => {
@@ -252,6 +744,8 @@
         hideError();
         spinner.classList.remove('hidden');
         spinner.classList.add('flex');
+        analyzeButton.disabled = true;
+        analyzeButtonLabel.textContent = 'Analyzing...';
 
         const payload = {
             cropName: document.getElementById('cropName').value,
@@ -271,18 +765,18 @@
                 throw new Error(data.message || 'The analysis could not be completed.');
             }
 
-            resultCard.classList.remove('hidden');
-            resultTitle.textContent = `${data.cropName} in ${data.region}`;
-            riskBadge.textContent = data.riskLevel;
-            riskBadge.className = `rounded-full px-4 py-2 text-sm font-semibold ${badgeClassesForRisk(data.riskLevel)}`;
-            mitigationStrategy.textContent = data.mitigationStrategy;
-
-            await loadHistory(0);
+            updateLatestResult(data);
+            await Promise.all([
+                loadHistory(0),
+                fetchWeather(payload.region)
+            ]);
         } catch (error) {
             showError(error.message);
         } finally {
             spinner.classList.add('hidden');
             spinner.classList.remove('flex');
+            analyzeButton.disabled = false;
+            analyzeButtonLabel.textContent = 'Analyze Supply Chain';
         }
     });
 
@@ -297,6 +791,25 @@
             loadHistory(currentPage + 1).catch(error => showError(error.message));
         }
     });
+
+    document.querySelectorAll('.sort-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const key = button.dataset.sortKey;
+            if (currentSort.key === key) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = { key, direction: 'asc' };
+            }
+            renderHistory(currentHistoryItems);
+        });
+    });
+
+    pdfButton.addEventListener('click', generatePdfReport);
+
+    updateRiskMap(initialMapPoints);
+    renderHistory(initialRecentReports);
+    updatePulseCharts(initialRecentReports);
+    fetchWeather(initialRecentReports[0]?.region || '');
 </script>
 </body>
 </html>
