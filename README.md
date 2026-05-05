@@ -60,6 +60,10 @@ Optional:
 - `DATABASE_USERNAME`
 - `DATABASE_PASSWORD`
 
+Recommended free-tier default:
+
+- `GEMINI_MODEL=gemini-2.0-flash-lite`
+
 Example production URL formats:
 
 ```text
