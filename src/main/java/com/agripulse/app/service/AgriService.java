@@ -37,11 +37,7 @@ public class AgriService {
             You are an Agri-Business Expert.
             Analyze the supply chain risk for the given crop and location.
             Return a Risk Level, a detailed disruption explanation, and a Plan B strategy.
-            If the risk level is High or Very High, call the sendEmergencyAlert tool before finalizing your answer.
             Keep the risk level limited to one of these values only: No Risk, Low, Medium, High, Very High.
-            The only tool you are allowed to call is sendEmergencyAlert.
-            Never call any tool named analyzeSupplyChainRisk or any other tool name.
-            Do not invent tools. If risk is not High or Very High, do not call any tool.
             Include practical detail about real disruption causes such as crop disease, heat wave, excess rainfall,
             flood risk, transport bottlenecks, market price swings, storage stress, and policy/export shocks when relevant.
             Tailor the answer to either an enterprise buyer or a farmer-producer based on stakeholderType.
@@ -65,6 +61,7 @@ public class AgriService {
 
     private final ChatClient agriChatClient;
     private final RiskReportRepository riskReportRepository;
+    private final EmergencyAlertTool emergencyAlertTool;
 
     public RiskAnalysisResponse analyzeRisk(RiskAnalysisRequest request) {
         if (request == null) {
@@ -109,9 +106,6 @@ public class AgriService {
                             For enterpriseActions, mention stronger practical sourcing or route actions with example
                             locations or cheaper fallback areas whenever possible instead of vague advice.
                             Use No Risk if no meaningful current disruption is visible.
-                            If the risk is High or Very High, call the sendEmergencyAlert tool using the same cropName, region,
-                            riskLevel, and mitigationStrategy before you complete the response.
-                            Do not call analyzeSupplyChainRisk. That is not a real tool.
                             Return only the structured risk result for this request.
                             """)
                             .param("cropName", request.getCropName())
@@ -136,6 +130,15 @@ public class AgriService {
 
             RiskReport savedRiskReport = riskReportRepository.save(riskReport);
             BigDecimal estimatedLossInr = estimateLossInr(request, aiRiskAssessment);
+
+            if ("High".equalsIgnoreCase(adjustedRiskLevel) || "Very High".equalsIgnoreCase(adjustedRiskLevel)) {
+                emergencyAlertTool.sendEmergencyAlert(
+                        request.getCropName().trim(),
+                        request.getRegion().trim(),
+                        adjustedRiskLevel,
+                        riskReport.getMitigationStrategy()
+                );
+            }
 
             return new RiskAnalysisResponse(
                     savedRiskReport.getId(),

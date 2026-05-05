@@ -17,11 +17,11 @@ public class EmergencyAlertTool {
     public String sendEmergencyAlert(
             @ToolParam(description = "Name of the crop under risk") String cropName,
             @ToolParam(description = "Region where the risk is happening") String region,
-            @ToolParam(description = "Risk level. Use High when the situation is severe") String riskLevel,
+            @ToolParam(description = "Risk level. Use High or Very High when the situation is severe") String riskLevel,
             @ToolParam(description = "Fallback or Plan B mitigation strategy") String mitigationStrategy) {
 
-        if (!"High".equalsIgnoreCase(riskLevel)) {
-            return "No emergency alert was logged because the risk level was not High.";
+        if (!"High".equalsIgnoreCase(riskLevel) && !"Very High".equalsIgnoreCase(riskLevel)) {
+            return "No emergency alert was logged because the risk level was not High or Very High.";
         }
 
         log.warn("HIGH RISK ALERT -> crop: {}, region: {}, riskLevel: {}, mitigationStrategy: {}",

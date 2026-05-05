@@ -35,11 +35,13 @@ class AgriServiceTest {
     @Mock
     private RiskReportRepository riskReportRepository;
 
+    private EmergencyAlertTool emergencyAlertTool;
     private AgriService agriService;
 
     @BeforeEach
     void setUp() {
-        agriService = new AgriService(chatClient, riskReportRepository);
+        emergencyAlertTool = new EmergencyAlertTool();
+        agriService = new AgriService(chatClient, riskReportRepository, emergencyAlertTool);
     }
 
     @Test
