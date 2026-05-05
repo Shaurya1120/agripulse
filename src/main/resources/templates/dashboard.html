@@ -79,8 +79,8 @@
         <section id="analysis" class="grid gap-8 lg:grid-cols-[1.55fr_0.95fr]">
             <article class="overflow-hidden rounded-[32px] border border-emerald-100 bg-white shadow-soft">
                 <div class="relative">
-                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-emerald-50/90"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(22,101,52,0.14),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(3,105,161,0.10),_transparent_28%)]"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-emerald-50/90"></div>
                     <div class="relative p-8 md:p-10">
                         <div class="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                             <div class="max-w-2xl">
@@ -157,6 +157,30 @@
                         </form>
 
                         <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"></div>
+
+                        <section class="mt-7 grid gap-4 xl:grid-cols-3">
+                            <article class="overflow-hidden rounded-[28px] border border-line bg-white shadow-sm">
+                                <img src="/images/crop-wheat.svg" alt="Illustration of wheat crop analytics" class="h-40 w-full object-cover">
+                                <div class="p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Wheat</p>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">Use for heatwave-sensitive grain routes and yield pressure monitoring.</p>
+                                </div>
+                            </article>
+                            <article class="overflow-hidden rounded-[28px] border border-line bg-white shadow-sm">
+                                <img src="/images/crop-rice.svg" alt="Illustration of rice crop analytics" class="h-40 w-full object-cover">
+                                <div class="p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Rice</p>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">Helpful for export-heavy rice supply chains with monsoon and logistics risk.</p>
+                                </div>
+                            </article>
+                            <article class="overflow-hidden rounded-[28px] border border-line bg-white shadow-sm">
+                                <img src="/images/crop-coffee.svg" alt="Illustration of coffee crop analytics" class="h-40 w-full object-cover">
+                                <div class="p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Coffee</p>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">Useful for quality-sensitive routes where rainfall and storage matter.</p>
+                                </div>
+                            </article>
+                        </section>
                     </div>
                 </div>
             </article>
@@ -231,7 +255,12 @@
                         Updated from the most recent historical logs
                     </div>
                 </div>
-                <canvas id="priceTrendChart" height="140"></canvas>
+                <div class="relative h-72 rounded-3xl border border-line bg-slate-50/70 p-3">
+                    <canvas id="priceTrendChart"></canvas>
+                    <div id="priceTrendFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500">
+                        Chart data is temporarily unavailable. Historical price pressure will render here as soon as analytics loads.
+                    </div>
+                </div>
             </article>
 
             <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
@@ -248,7 +277,12 @@
                         </svg>
                     </div>
                 </div>
-                <canvas id="riskBreakdownChart" height="250"></canvas>
+                <div class="relative h-72 rounded-3xl border border-line bg-slate-50/70 p-3">
+                    <canvas id="riskBreakdownChart"></canvas>
+                    <div id="riskBreakdownFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500">
+                        Risk factor breakdown will appear here after the chart library finishes loading.
+                    </div>
+                </div>
             </article>
         </section>
 
@@ -264,7 +298,12 @@
                         Regions update after every new analysis
                     </div>
                 </div>
-                <canvas id="riskMapChart" height="220"></canvas>
+                <div class="relative h-72 rounded-3xl border border-line bg-slate-50/70 p-3">
+                    <canvas id="riskMapChart"></canvas>
+                    <div id="riskMapFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500">
+                        Region-by-region risk coverage will render here after analytics initializes.
+                    </div>
+                </div>
             </article>
 
             <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
@@ -320,25 +359,25 @@
                             <th class="px-5 py-4">
                                 <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="cropName">
                                     Crop
-                                    <span class="text-slate-300">↕</span>
+                                    <span class="text-slate-300">+</span>
                                 </button>
                             </th>
                             <th class="px-5 py-4">
                                 <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="region">
                                     Region
-                                    <span class="text-slate-300">↕</span>
+                                    <span class="text-slate-300">+</span>
                                 </button>
                             </th>
                             <th class="px-5 py-4">
                                 <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="riskLevel">
                                     Risk
-                                    <span class="text-slate-300">↕</span>
+                                    <span class="text-slate-300">+</span>
                                 </button>
                             </th>
                             <th class="px-5 py-4">
                                 <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="mitigationStrategy">
                                     Plan B Strategy
-                                    <span class="text-slate-300">↕</span>
+                                    <span class="text-slate-300">+</span>
                                 </button>
                             </th>
                         </tr>
@@ -432,71 +471,94 @@
         }
     };
 
-    const priceTrendChart = new Chart(document.getElementById('priceTrendChart'), {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Estimated Price Trend Index',
-                data: [],
-                borderColor: '#0369A1',
-                backgroundColor: 'rgba(3, 105, 161, 0.12)',
-                fill: true,
-                tension: 0.35,
-                pointRadius: 4,
-                pointHoverRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            ...chartDefaults
-        }
-    });
+    let priceTrendChart = null;
+    let riskBreakdownChart = null;
+    let riskMapChart = null;
 
-    const riskBreakdownChart = new Chart(document.getElementById('riskBreakdownChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Weather', 'Logistics', 'Market', 'Storage'],
-            datasets: [{
-                label: 'Signal Strength',
-                data: [0, 0, 0, 0],
-                backgroundColor: ['#166534', '#0369A1', '#0EA5E9', '#86EFAC'],
-                borderRadius: 14
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            ...chartDefaults
+    function showChartFallback(id, message) {
+        const fallback = document.getElementById(id);
+        if (!fallback) {
+            return;
         }
-    });
 
-    const riskMapChart = new Chart(document.getElementById('riskMapChart'), {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [
-                {
-                    label: 'High Risk Reports',
-                    data: [],
-                    backgroundColor: '#166534',
-                    borderRadius: 14
-                },
-                {
-                    label: 'Total Reports',
-                    data: [],
-                    backgroundColor: 'rgba(3, 105, 161, 0.2)',
-                    borderRadius: 14
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            ...chartDefaults
+        fallback.textContent = message;
+        fallback.classList.remove('hidden');
+    }
+
+    function initializeCharts() {
+        if (!window.Chart) {
+            showChartFallback('priceTrendFallback', 'The chart library is taking longer than expected to load. The dashboard can still analyze risk reports.');
+            showChartFallback('riskBreakdownFallback', 'The chart library is taking longer than expected to load. The dashboard can still analyze risk reports.');
+            showChartFallback('riskMapFallback', 'The chart library is taking longer than expected to load. The dashboard can still analyze risk reports.');
+            return;
         }
-    });
+
+        priceTrendChart = new Chart(document.getElementById('priceTrendChart'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Estimated Price Trend Index',
+                    data: [],
+                    borderColor: '#0369A1',
+                    backgroundColor: 'rgba(3, 105, 161, 0.12)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                ...chartDefaults
+            }
+        });
+
+        riskBreakdownChart = new Chart(document.getElementById('riskBreakdownChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Weather', 'Logistics', 'Market', 'Storage'],
+                datasets: [{
+                    label: 'Signal Strength',
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#166534', '#0369A1', '#0EA5E9', '#86EFAC'],
+                    borderRadius: 14
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                ...chartDefaults
+            }
+        });
+
+        riskMapChart = new Chart(document.getElementById('riskMapChart'), {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'High Risk Reports',
+                        data: [],
+                        backgroundColor: '#166534',
+                        borderRadius: 14
+                    },
+                    {
+                        label: 'Total Reports',
+                        data: [],
+                        backgroundColor: 'rgba(3, 105, 161, 0.2)',
+                        borderRadius: 14
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                ...chartDefaults
+            }
+        });
+    }
 
     function badgeClassesForRisk(riskLevel) {
         if (riskLevel === 'High') {
@@ -536,7 +598,7 @@
             const riskWeight = riskLevelPriority[item.riskLevel] || 1;
             baseline += riskWeight * 4 + index;
             return {
-                label: `${item.cropName} • ${item.region}`,
+                label: `${item.cropName} - ${item.region}`,
                 value: baseline
             };
         });
@@ -564,6 +626,10 @@
     }
 
     function updateRiskMap(points) {
+        if (!riskMapChart) {
+            return;
+        }
+
         riskMapChart.data.labels = points.map(point => point.region);
         riskMapChart.data.datasets[0].data = points.map(point => point.highRiskReports);
         riskMapChart.data.datasets[1].data = points.map(point => point.totalReports);
@@ -575,12 +641,16 @@
         const priceSeries = buildPriceTrendSeries(safeItems);
         const riskBreakdown = buildRiskBreakdown(safeItems);
 
-        priceTrendChart.data.labels = priceSeries.map(item => item.label);
-        priceTrendChart.data.datasets[0].data = priceSeries.map(item => item.value);
-        priceTrendChart.update();
+        if (priceTrendChart) {
+            priceTrendChart.data.labels = priceSeries.map(item => item.label);
+            priceTrendChart.data.datasets[0].data = priceSeries.map(item => item.value);
+            priceTrendChart.update();
+        }
 
-        riskBreakdownChart.data.datasets[0].data = riskBreakdown;
-        riskBreakdownChart.update();
+        if (riskBreakdownChart) {
+            riskBreakdownChart.data.datasets[0].data = riskBreakdown;
+            riskBreakdownChart.update();
+        }
 
         const trackedRegions = new Set(safeItems.map(item => item.region)).size;
         const highRiskCount = safeItems.filter(item => item.riskLevel === 'High').length;
@@ -697,9 +767,9 @@
             const current = weatherData.current;
 
             weatherRegion.textContent = `${location.name}, ${location.country || ''}`.trim().replace(/,\s$/, '');
-            weatherSummary.textContent = `Live weather widget for the selected operating geography.`;
-            weatherTemperature.textContent = `${Math.round(current.temperature_2m)}°C`;
-            weatherWind.textContent = `Wind ${Math.round(current.wind_speed_10m)} km/h • code ${current.weather_code}`;
+            weatherSummary.textContent = 'Live weather widget for the selected operating geography.';
+            weatherTemperature.textContent = `${Math.round(current.temperature_2m)} C`;
+            weatherWind.textContent = `Wind ${Math.round(current.wind_speed_10m)} km/h | code ${current.weather_code}`;
         } catch (error) {
             weatherSummary.textContent = error.message || 'Weather data is unavailable right now.';
             weatherWind.textContent = 'Try a more specific region name.';
@@ -707,6 +777,11 @@
     }
 
     async function generatePdfReport() {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            showError('The PDF tool is still loading. Please try again in a moment.');
+            return;
+        }
+
         const { jsPDF } = window.jspdf;
         const documentPdf = new jsPDF();
         const crop = document.getElementById('cropName').value || 'Not specified';
@@ -766,10 +841,8 @@
             }
 
             updateLatestResult(data);
-            await Promise.all([
-                loadHistory(0),
-                fetchWeather(payload.region)
-            ]);
+            await loadHistory(0);
+            fetchWeather(payload.region).catch(() => {});
         } catch (error) {
             showError(error.message);
         } finally {
@@ -806,6 +879,7 @@
 
     pdfButton.addEventListener('click', generatePdfReport);
 
+    initializeCharts();
     updateRiskMap(initialMapPoints);
     renderHistory(initialRecentReports);
     updatePulseCharts(initialRecentReports);
