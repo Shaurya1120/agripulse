@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 
+import java.math.BigDecimal;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +36,16 @@ class AgriServiceTest {
     @Mock
     private RiskReportRepository riskReportRepository;
 
+    @Mock
+    private MandiPriceService mandiPriceService;
+
     private EmergencyAlertTool emergencyAlertTool;
     private AgriService agriService;
 
     @BeforeEach
     void setUp() {
         emergencyAlertTool = new EmergencyAlertTool();
-        agriService = new AgriService(chatClient, riskReportRepository, emergencyAlertTool);
+        agriService = new AgriService(chatClient, riskReportRepository, emergencyAlertTool, mandiPriceService);
     }
 
     @Test
@@ -63,6 +67,8 @@ class AgriServiceTest {
         when(chatClientRequestSpec.user(any(Consumer.class))).thenReturn(chatClientRequestSpec);
         when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
         when(callResponseSpec.entity(AiRiskAssessment.class)).thenReturn(aiRiskAssessment);
+        when(mandiPriceService.findMarketEvidence(anyString(), anyString(), any(), anyString()))
+                .thenReturn(MandiPriceService.MarketEvidence.unavailable());
         when(riskReportRepository.save(any(RiskReport.class))).thenAnswer(invocation -> {
             RiskReport saved = invocation.getArgument(0);
             saved.setId(99L);
@@ -106,6 +112,8 @@ class AgriServiceTest {
         when(chatClientRequestSpec.user(any(Consumer.class))).thenReturn(chatClientRequestSpec);
         when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
         when(callResponseSpec.entity(AiRiskAssessment.class)).thenReturn(aiRiskAssessment);
+        when(mandiPriceService.findMarketEvidence(anyString(), anyString(), any(), anyString()))
+                .thenReturn(MandiPriceService.MarketEvidence.unavailable());
         when(riskReportRepository.save(any(RiskReport.class))).thenAnswer(invocation -> {
             RiskReport saved = invocation.getArgument(0);
             saved.setId(101L);
@@ -118,5 +126,57 @@ class AgriServiceTest {
         assertThat(response.getPrimaryThreat()).isEqualTo("Stable weather conditions");
         assertThat(response.getDisruptionSummary()).contains("No strong live weather disruption");
         assertThat(response.getEstimatedLossPercent()).isZero();
+    }
+
+    @Test
+    void analyzeRiskUsesVerifiedMandiSignalForPricePressure() {
+        RiskAnalysisRequest request = new RiskAnalysisRequest();
+        request.setCropName("Wheat");
+        request.setRegion("Malda, West Bengal");
+        request.setStakeholderType("enterprise");
+        request.setWeatherContext("Malda, West Bengal, India | 29 C | Wind 8 km/h | code 1");
+        request.setQuantityTonnes(new BigDecimal("10"));
+        request.setCropRatePerKgInr(new BigDecimal("20"));
+
+        AiRiskAssessment aiRiskAssessment = new AiRiskAssessment();
+        aiRiskAssessment.setRiskLevel("low");
+        aiRiskAssessment.setMitigationStrategy("Shift volume carefully.");
+        aiRiskAssessment.setDisruptionSummary("Light pressure.");
+        aiRiskAssessment.setPrimaryThreat("Stable weather conditions");
+        aiRiskAssessment.setDetailedProblem("The AI sees only mild disruption.");
+
+        when(chatClient.prompt()).thenReturn(chatClientRequestSpec);
+        when(chatClientRequestSpec.system(anyString())).thenReturn(chatClientRequestSpec);
+        when(chatClientRequestSpec.user(any(Consumer.class))).thenReturn(chatClientRequestSpec);
+        when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+        when(callResponseSpec.entity(AiRiskAssessment.class)).thenReturn(aiRiskAssessment);
+        when(mandiPriceService.findMarketEvidence(anyString(), anyString(), any(), anyString()))
+                .thenReturn(new MandiPriceService.MarketEvidence(
+                        true,
+                        "Wheat",
+                        "Malda Mandi, Malda, West Bengal",
+                        "05/05/2026",
+                        new BigDecimal("30.00"),
+                        new BigDecimal("28.00"),
+                        new BigDecimal("32.00"),
+                        "Very High",
+                        50,
+                        18,
+                        25,
+                        "Official mandi data from Malda Mandi, Malda, West Bengal shows Wheat near INR 30 per kg on 2026-05-05.",
+                        java.util.List.of("Verified mandi modal price is INR 30 per kg."),
+                        "data.gov.in AGMARKNET mandi price dataset"
+                ));
+        when(riskReportRepository.save(any(RiskReport.class))).thenAnswer(invocation -> {
+            RiskReport saved = invocation.getArgument(0);
+            saved.setId(111L);
+            return saved;
+        });
+
+        RiskAnalysisResponse response = agriService.analyzeRisk(request);
+
+        assertThat(response.getRiskLevel()).isEqualTo("Very High");
+        assertThat(response.getExpectedPriceIncreasePercent()).isEqualTo(50);
+        assertThat(response.getEstimatedLossInr()).isEqualByComparingTo("75000.00");
     }
 }

@@ -64,6 +64,7 @@ public class AgriService {
     private final ChatClient agriChatClient;
     private final RiskReportRepository riskReportRepository;
     private final EmergencyAlertTool emergencyAlertTool;
+    private final MandiPriceService mandiPriceService;
 
     public RiskAnalysisResponse analyzeRisk(RiskAnalysisRequest request) {
         if (request == null) {
@@ -72,6 +73,13 @@ public class AgriService {
 
         try {
             WeatherEvidence weatherEvidence = buildWeatherEvidence(request);
+            String stakeholderType = normalizeStakeholderType(request);
+            MandiPriceService.MarketEvidence marketEvidence = mandiPriceService.findMarketEvidence(
+                    request.getCropName(),
+                    request.getRegion(),
+                    request.getCropRatePerKgInr(),
+                    stakeholderType
+            );
 
             AiRiskAssessment aiRiskAssessment = agriChatClient.prompt()
                     .system(SYSTEM_PROMPT)
@@ -88,6 +96,11 @@ public class AgriService {
                             Verified Primary Threat: {verifiedPrimaryThreat}
                             Verified Weather Summary: {verifiedSummary}
                             Verified Weather Factors: {verifiedFactors}
+                            Verified Market Risk Level: {verifiedMarketRiskLevel}
+                            Verified Market Summary: {verifiedMarketSummary}
+                            Verified Market Factors: {verifiedMarketFactors}
+                            Verified Market Modal Price INR per Kg: {verifiedMarketPrice}
+                            Verified Market Source: {verifiedMarketSource}
 
                             Analyze the current agricultural supply chain risk for this crop and exact location.
                             Return a detailed, structured answer with:
@@ -114,12 +127,14 @@ public class AgriService {
                             For enterpriseActions, mention stronger practical sourcing or route actions with example
                             locations or cheaper fallback areas whenever possible instead of vague advice.
                             Keep your answer aligned with the verified weather evidence above.
+                            Keep your answer aligned with the verified official mandi price evidence above.
                             If the verified risk level is No Risk or Low, do not describe a severe disruption.
+                            If verified mandi data looks stable and the weather is stable, do not force a strong price shock.
                             Return only the structured risk result for this request.
                             """)
                             .param("cropName", request.getCropName())
                             .param("region", request.getRegion())
-                            .param("stakeholderType", normalizeStakeholderType(request))
+                            .param("stakeholderType", stakeholderType)
                             .param("quantityTonnes", safeNumber(request.getQuantityTonnes()))
                             .param("cropRatePerKgInr", safeNumber(request.getCropRatePerKgInr()))
                             .param("farmAreaAcres", safeNumber(request.getFarmAreaAcres()))
@@ -128,14 +143,17 @@ public class AgriService {
                             .param("verifiedRiskLevel", weatherEvidence.riskLevel())
                             .param("verifiedPrimaryThreat", weatherEvidence.primaryThreat())
                             .param("verifiedSummary", weatherEvidence.disruptionSummary())
-                            .param("verifiedFactors", String.join(", ", weatherEvidence.riskFactors())))
+                            .param("verifiedFactors", String.join(", ", weatherEvidence.riskFactors()))
+                            .param("verifiedMarketRiskLevel", marketEvidence.riskLevel())
+                            .param("verifiedMarketSummary", marketEvidence.summary())
+                            .param("verifiedMarketFactors", String.join(", ", marketEvidence.factors()))
+                            .param("verifiedMarketPrice", marketEvidence.modalPricePerKgInr() == null ? "Not available" : marketEvidence.modalPricePerKgInr().stripTrailingZeros().toPlainString())
+                            .param("verifiedMarketSource", defaultText(marketEvidence.sourceLabel(), "Not available")))
                     .call()
                     .entity(AiRiskAssessment.class);
 
             String normalizedRiskLevel = normalizeRiskLevel(aiRiskAssessment);
-            String adjustedRiskLevel = weatherEvidence.liveEvidenceAvailable()
-                    ? weatherEvidence.riskLevel()
-                    : adjustRiskLevelForLiveSignals(normalizedRiskLevel, request, aiRiskAssessment);
+            String adjustedRiskLevel = determineFinalRiskLevel(normalizedRiskLevel, request, aiRiskAssessment, weatherEvidence, marketEvidence);
 
             RiskReport riskReport = new RiskReport();
             riskReport.setCropName(request.getCropName().trim());
@@ -160,28 +178,28 @@ public class AgriService {
                     savedRiskReport.getRegion(),
                     adjustedRiskLevel,
                     savedRiskReport.getMitigationStrategy(),
-                    normalizeStakeholderType(request),
-                    chooseDisruptionSummary(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
-                    choosePrimaryThreat(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
-                    chooseDetailedProblem(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
-                    chooseRiskFactors(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
+                    stakeholderType,
+                    chooseDisruptionSummary(aiRiskAssessment, weatherEvidence, marketEvidence, adjustedRiskLevel),
+                    choosePrimaryThreat(aiRiskAssessment, weatherEvidence, marketEvidence, adjustedRiskLevel),
+                    chooseDetailedProblem(aiRiskAssessment, weatherEvidence, marketEvidence, adjustedRiskLevel),
+                    chooseRiskFactors(aiRiskAssessment, weatherEvidence, marketEvidence, adjustedRiskLevel),
                     normalizeList(aiRiskAssessment.getEnterpriseActions()),
                     normalizeList(aiRiskAssessment.getFarmerActions()),
                     normalizeList(aiRiskAssessment.getGovernmentSchemes()),
-                    chooseHindiSummary(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
-                    chooseHindiPrimaryThreat(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
-                    chooseHindiDetailedProblem(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
+                    chooseHindiSummary(aiRiskAssessment, weatherEvidence, marketEvidence, adjustedRiskLevel),
+                    chooseHindiPrimaryThreat(aiRiskAssessment, weatherEvidence, marketEvidence, adjustedRiskLevel),
+                    chooseHindiDetailedProblem(aiRiskAssessment, weatherEvidence, marketEvidence, adjustedRiskLevel),
                     defaultText(aiRiskAssessment.getHindiMitigationStrategy(), normalizeMitigationStrategy(aiRiskAssessment)),
                     normalizeList(aiRiskAssessment.getHindiFarmerActions()),
                     normalizeList(aiRiskAssessment.getHindiGovernmentSchemes()),
-                    chooseExpectedSupplyImpact(aiRiskAssessment, weatherEvidence),
-                    chooseExpectedPriceIncrease(aiRiskAssessment, weatherEvidence),
-                    chooseEstimatedLossPercent(aiRiskAssessment, weatherEvidence),
+                    chooseExpectedSupplyImpact(aiRiskAssessment, weatherEvidence, marketEvidence),
+                    chooseExpectedPriceIncrease(aiRiskAssessment, weatherEvidence, marketEvidence),
+                    chooseEstimatedLossPercent(aiRiskAssessment, weatherEvidence, marketEvidence),
                     request.getQuantityTonnes(),
                     request.getCropRatePerKgInr(),
                     request.getFarmAreaAcres(),
                     request.getPlanningHorizonDays(),
-                    recalculateLossFromEvidence(request, aiRiskAssessment, weatherEvidence)
+                    recalculateLossFromEvidence(request, aiRiskAssessment, weatherEvidence, marketEvidence)
             );
         }
         catch (NonTransientAiException exception) {
@@ -336,6 +354,24 @@ public class AgriService {
         };
     }
 
+    private String determineFinalRiskLevel(
+            String normalizedRiskLevel,
+            RiskAnalysisRequest request,
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence) {
+        String weatherAdjusted = weatherEvidence.liveEvidenceAvailable()
+                ? weatherEvidence.riskLevel()
+                : adjustRiskLevelForLiveSignals(normalizedRiskLevel, request, aiRiskAssessment);
+
+        if (!marketEvidence.available()) {
+            return weatherAdjusted;
+        }
+
+        int finalRank = Math.max(riskRank(weatherAdjusted), riskRank(marketEvidence.riskLevel()));
+        return riskLevelFromRank(finalRank);
+    }
+
     private boolean isStableWeatherContext(String weatherContext) {
         if (!StringUtils.hasText(weatherContext)) {
             return false;
@@ -351,6 +387,102 @@ public class AgriService {
         boolean normalTemperature = temperature != null && temperature >= 10 && temperature <= 36;
 
         return calmWeatherCode && calmWind && normalTemperature;
+    }
+
+    private int riskRank(String riskLevel) {
+        return switch (defaultText(riskLevel, "No Risk")) {
+            case "Very High" -> 5;
+            case "High" -> 4;
+            case "Medium" -> 3;
+            case "Low" -> 2;
+            default -> 1;
+        };
+    }
+
+    private String riskLevelFromRank(int rank) {
+        return switch (rank) {
+            case 5 -> "Very High";
+            case 4 -> "High";
+            case 3 -> "Medium";
+            case 2 -> "Low";
+            default -> "No Risk";
+        };
+    }
+
+    private String verifiedSummary(WeatherEvidence weatherEvidence, MandiPriceService.MarketEvidence marketEvidence, String finalRiskLevel) {
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) >= riskRank(weatherEvidence.riskLevel())) {
+            if ("No Risk".equals(finalRiskLevel)) {
+                return "No strong live weather or official mandi price disruption is visible right now.";
+            }
+            return marketEvidence.summary();
+        }
+        return weatherEvidence.disruptionSummary();
+    }
+
+    private String verifiedPrimaryThreat(WeatherEvidence weatherEvidence, MandiPriceService.MarketEvidence marketEvidence) {
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) > riskRank(weatherEvidence.riskLevel())) {
+            return "Official mandi price pressure";
+        }
+        return weatherEvidence.primaryThreat();
+    }
+
+    private String verifiedDetailedProblem(WeatherEvidence weatherEvidence, MandiPriceService.MarketEvidence marketEvidence, String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) && marketEvidence.available() && "No Risk".equals(marketEvidence.riskLevel())) {
+            return "Live weather looks stable and official mandi price data does not show a strong current disruption signal for this crop and location.";
+        }
+
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) > riskRank(weatherEvidence.riskLevel())) {
+            return marketEvidence.summary() + " This verified market signal is stronger than the live weather signal, so price movement is the main current risk factor.";
+        }
+
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) >= 3 && riskRank(weatherEvidence.riskLevel()) >= 3) {
+            return weatherEvidence.detailedProblem() + " Official mandi price data also confirms active market pressure in " + defaultText(marketEvidence.locationUsed(), "the matched mandi market") + ".";
+        }
+
+        return weatherEvidence.detailedProblem();
+    }
+
+    private List<String> verifiedFactors(
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        List<String> merged = java.util.stream.Stream.concat(
+                        weatherEvidence.riskFactors().stream(),
+                        marketEvidence.available() ? marketEvidence.factors().stream() : java.util.stream.Stream.empty())
+                .distinct()
+                .limit("No Risk".equals(finalRiskLevel) ? 4 : 6)
+                .toList();
+        return merged.isEmpty() ? List.of("No verified disruption factor was found.") : merged;
+    }
+
+    private String verifiedHindiSummary(WeatherEvidence weatherEvidence, MandiPriceService.MarketEvidence marketEvidence, String finalRiskLevel) {
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) > riskRank(weatherEvidence.riskLevel())) {
+            if ("No Risk".equals(finalRiskLevel)) {
+                return "लाइव मौसम और आधिकारिक मंडी कीमतों के आधार पर अभी कोई बड़ा जोखिम संकेत नहीं दिख रहा है।";
+            }
+            return "आधिकारिक मंडी कीमत के अनुसार इस फसल पर अभी बाजार दबाव दिख रहा है।";
+        }
+        return hindiSummaryForEvidence(weatherEvidence);
+    }
+
+    private String verifiedHindiPrimaryThreat(WeatherEvidence weatherEvidence, MandiPriceService.MarketEvidence marketEvidence) {
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) > riskRank(weatherEvidence.riskLevel())) {
+            return "आधिकारिक मंडी कीमत का दबाव";
+        }
+        return hindiPrimaryThreatForEvidence(weatherEvidence);
+    }
+
+    private String verifiedHindiDetailedProblem(WeatherEvidence weatherEvidence, MandiPriceService.MarketEvidence marketEvidence, String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) && marketEvidence.available() && "No Risk".equals(marketEvidence.riskLevel())) {
+            return "लाइव मौसम सामान्य दिख रहा है और आधिकारिक मंडी कीमतों में भी अभी कोई बड़ा जोखिम संकेत नहीं दिख रहा है।";
+        }
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) > riskRank(weatherEvidence.riskLevel())) {
+            return "आधिकारिक मंडी कीमत के आधार पर इस फसल की बाजार स्थिति में दबाव दिख रहा है, इसलिए यह रिपोर्ट कीमत से जुड़े जोखिम को मुख्य समस्या मानती है।";
+        }
+        if (marketEvidence.available() && riskRank(marketEvidence.riskLevel()) >= 3 && riskRank(weatherEvidence.riskLevel()) >= 3) {
+            return hindiDetailedProblemForEvidence(weatherEvidence) + " साथ ही आधिकारिक मंडी कीमतें भी बाजार दबाव की पुष्टि कर रही हैं।";
+        }
+        return hindiDetailedProblemForEvidence(weatherEvidence);
     }
 
     private Integer extractIntAfter(String text, String marker) {
@@ -406,91 +538,153 @@ public class AgriService {
         return false;
     }
 
-    private Integer chooseExpectedSupplyImpact(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
-        return weatherEvidence.liveEvidenceAvailable()
-                ? weatherEvidence.expectedSupplyImpactPercent()
-                : normalizePercent(aiRiskAssessment.getExpectedSupplyImpactPercent());
-    }
-
-    private Integer chooseExpectedPriceIncrease(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
-        return weatherEvidence.liveEvidenceAvailable()
-                ? weatherEvidence.expectedPriceIncreasePercent()
-                : normalizePercent(aiRiskAssessment.getExpectedPriceIncreasePercent());
-    }
-
-    private Integer chooseEstimatedLossPercent(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
-        return weatherEvidence.liveEvidenceAvailable()
-                ? weatherEvidence.estimatedLossPercent()
-                : normalizePercent(aiRiskAssessment.getEstimatedLossPercent());
-    }
-
-    private String chooseDisruptionSummary(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
-        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
-            return weatherEvidence.disruptionSummary();
+    private Integer chooseExpectedSupplyImpact(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence) {
+        int verified = 0;
+        if (weatherEvidence.liveEvidenceAvailable()) {
+            verified = Math.max(verified, weatherEvidence.expectedSupplyImpactPercent());
         }
-        return defaultText(aiRiskAssessment.getDisruptionSummary(), weatherEvidence.disruptionSummary());
+        if (marketEvidence.available()) {
+            verified = Math.max(verified, marketEvidence.expectedSupplyImpactPercent());
+        }
+        Integer fallback = normalizePercent(aiRiskAssessment.getExpectedSupplyImpactPercent());
+        return verified > 0 ? verified : (fallback == null ? 0 : fallback);
     }
 
-    private String choosePrimaryThreat(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
-        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
-            return weatherEvidence.primaryThreat();
+    private Integer chooseExpectedPriceIncrease(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence) {
+        int verified = 0;
+        if (weatherEvidence.liveEvidenceAvailable()) {
+            verified = Math.max(verified, weatherEvidence.expectedPriceIncreasePercent());
         }
-        return defaultText(aiRiskAssessment.getPrimaryThreat(), weatherEvidence.primaryThreat());
+        if (marketEvidence.available()) {
+            verified = Math.max(verified, marketEvidence.pricePressurePercent());
+        }
+        Integer fallback = normalizePercent(aiRiskAssessment.getExpectedPriceIncreasePercent());
+        return verified > 0 ? verified : (fallback == null ? 0 : fallback);
     }
 
-    private String chooseDetailedProblem(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
-        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
-            return weatherEvidence.detailedProblem();
+    private Integer chooseEstimatedLossPercent(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence) {
+        int verified = 0;
+        if (weatherEvidence.liveEvidenceAvailable()) {
+            verified = Math.max(verified, weatherEvidence.estimatedLossPercent());
         }
-        return defaultText(aiRiskAssessment.getDetailedProblem(), weatherEvidence.detailedProblem());
+        if (marketEvidence.available()) {
+            verified = Math.max(verified, marketEvidence.estimatedLossPercent());
+        }
+        Integer fallback = normalizePercent(aiRiskAssessment.getEstimatedLossPercent());
+        return verified > 0 ? verified : (fallback == null ? 0 : fallback);
     }
 
-    private List<String> chooseRiskFactors(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
-        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
-            return weatherEvidence.riskFactors();
+    private String chooseDisruptionSummary(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel)) {
+            return verifiedSummary(weatherEvidence, marketEvidence, finalRiskLevel);
         }
+        return defaultText(aiRiskAssessment.getDisruptionSummary(), verifiedSummary(weatherEvidence, marketEvidence, finalRiskLevel));
+    }
 
+    private String choosePrimaryThreat(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel)) {
+            return verifiedPrimaryThreat(weatherEvidence, marketEvidence);
+        }
+        return defaultText(aiRiskAssessment.getPrimaryThreat(), verifiedPrimaryThreat(weatherEvidence, marketEvidence));
+    }
+
+    private String chooseDetailedProblem(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel)) {
+            return verifiedDetailedProblem(weatherEvidence, marketEvidence, finalRiskLevel);
+        }
+        return defaultText(aiRiskAssessment.getDetailedProblem(), verifiedDetailedProblem(weatherEvidence, marketEvidence, finalRiskLevel));
+    }
+
+    private List<String> chooseRiskFactors(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        List<String> verifiedFactors = verifiedFactors(weatherEvidence, marketEvidence, finalRiskLevel);
         List<String> aiFactors = normalizeList(aiRiskAssessment.getRiskFactors());
-        if (aiFactors.isEmpty()) {
-            return weatherEvidence.riskFactors();
+        if (aiFactors.isEmpty() || "No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel)) {
+            return verifiedFactors;
         }
 
-        return java.util.stream.Stream.concat(weatherEvidence.riskFactors().stream(), aiFactors.stream())
+        return java.util.stream.Stream.concat(verifiedFactors.stream(), aiFactors.stream())
                 .distinct()
                 .limit(6)
                 .toList();
     }
 
-    private String chooseHindiSummary(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
-        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
-            return hindiSummaryForEvidence(weatherEvidence);
+    private String chooseHindiSummary(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel)) {
+            return verifiedHindiSummary(weatherEvidence, marketEvidence, finalRiskLevel);
         }
-        return defaultText(aiRiskAssessment.getHindiDisruptionSummary(), hindiSummaryForEvidence(weatherEvidence));
+        return defaultText(aiRiskAssessment.getHindiDisruptionSummary(), verifiedHindiSummary(weatherEvidence, marketEvidence, finalRiskLevel));
     }
 
-    private String chooseHindiPrimaryThreat(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
-        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
-            return hindiPrimaryThreatForEvidence(weatherEvidence);
+    private String chooseHindiPrimaryThreat(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel)) {
+            return verifiedHindiPrimaryThreat(weatherEvidence, marketEvidence);
         }
-        return defaultText(aiRiskAssessment.getHindiPrimaryThreat(), hindiPrimaryThreatForEvidence(weatherEvidence));
+        return defaultText(aiRiskAssessment.getHindiPrimaryThreat(), verifiedHindiPrimaryThreat(weatherEvidence, marketEvidence));
     }
 
-    private String chooseHindiDetailedProblem(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
-        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
-            return hindiDetailedProblemForEvidence(weatherEvidence);
+    private String chooseHindiDetailedProblem(
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence,
+            String finalRiskLevel) {
+        if ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel)) {
+            return verifiedHindiDetailedProblem(weatherEvidence, marketEvidence, finalRiskLevel);
         }
-        return defaultText(aiRiskAssessment.getHindiDetailedProblem(), hindiDetailedProblemForEvidence(weatherEvidence));
+        return defaultText(aiRiskAssessment.getHindiDetailedProblem(), verifiedHindiDetailedProblem(weatherEvidence, marketEvidence, finalRiskLevel));
     }
 
-    private BigDecimal recalculateLossFromEvidence(RiskAnalysisRequest request, AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
-        Integer lossPercent = chooseEstimatedLossPercent(aiRiskAssessment, weatherEvidence);
-        if (request == null || request.getQuantityTonnes() == null || request.getCropRatePerKgInr() == null || lossPercent == null) {
+    private BigDecimal recalculateLossFromEvidence(
+            RiskAnalysisRequest request,
+            AiRiskAssessment aiRiskAssessment,
+            WeatherEvidence weatherEvidence,
+            MandiPriceService.MarketEvidence marketEvidence) {
+        Integer lossPercent = chooseEstimatedLossPercent(aiRiskAssessment, weatherEvidence, marketEvidence);
+        BigDecimal referenceRate = request == null ? null : request.getCropRatePerKgInr();
+
+        if (marketEvidence.available() && marketEvidence.modalPricePerKgInr() != null) {
+            referenceRate = marketEvidence.modalPricePerKgInr();
+        }
+
+        if (request == null || request.getQuantityTonnes() == null || referenceRate == null || lossPercent == null) {
             return null;
         }
 
         return request.getQuantityTonnes()
                 .multiply(BigDecimal.valueOf(1000))
-                .multiply(request.getCropRatePerKgInr())
+                .multiply(referenceRate)
                 .multiply(BigDecimal.valueOf(lossPercent))
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
