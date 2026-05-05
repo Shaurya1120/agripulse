@@ -48,6 +48,10 @@ public class AgriService {
             Treat the provided location as exact user input. If the user gives a district, city, block, or state such as
             Malda, West Bengal, use that exact place in your reasoning instead of replacing it with a generic region.
             Use simple language that a new visitor can understand quickly.
+            For enterprise buyers and exporters, avoid weak generic advice like only saying diversify suppliers.
+            Give stronger, specific alternatives when possible such as cheaper nearby sourcing belts, substitute states,
+            backup procurement zones, mandi clusters, or lower-risk logistics corridors that make business sense.
+            For farmer reports, also provide a Hindi version of the key explanation and action plan.
             """;
 
     private final ChatClient agriChatClient;
@@ -81,11 +85,19 @@ public class AgriService {
                             - enterpriseActions as a short list
                             - farmerActions as a short list
                             - governmentSchemes as a short list relevant for India when useful
+                            - hindiDisruptionSummary
+                            - hindiPrimaryThreat
+                            - hindiDetailedProblem
+                            - hindiMitigationStrategy
+                            - hindiFarmerActions as a short list
+                            - hindiGovernmentSchemes as a short list
                             - expectedSupplyImpactPercent as an integer
                             - expectedPriceIncreasePercent as an integer
                             - estimatedLossPercent as an integer
                             Use simple language.
                             Clearly describe the actual local problem in that place.
+                            For enterpriseActions, mention stronger practical sourcing or route actions with example
+                            locations or cheaper fallback areas whenever possible instead of vague advice.
                             If the risk is High, call the sendEmergencyAlert tool using the same cropName, region,
                             riskLevel, and mitigationStrategy before you complete the response.
                             Do not call analyzeSupplyChainRisk. That is not a real tool.
@@ -124,6 +136,12 @@ public class AgriService {
                     normalizeList(aiRiskAssessment.getEnterpriseActions()),
                     normalizeList(aiRiskAssessment.getFarmerActions()),
                     normalizeList(aiRiskAssessment.getGovernmentSchemes()),
+                    defaultText(aiRiskAssessment.getHindiDisruptionSummary(), defaultText(aiRiskAssessment.getDisruptionSummary(), "Hindi summary not returned.")),
+                    defaultText(aiRiskAssessment.getHindiPrimaryThreat(), defaultText(aiRiskAssessment.getPrimaryThreat(), "Hindi threat not returned.")),
+                    defaultText(aiRiskAssessment.getHindiDetailedProblem(), defaultText(aiRiskAssessment.getDetailedProblem(), "Hindi problem explanation not returned.")),
+                    defaultText(aiRiskAssessment.getHindiMitigationStrategy(), normalizeMitigationStrategy(aiRiskAssessment)),
+                    normalizeList(aiRiskAssessment.getHindiFarmerActions()),
+                    normalizeList(aiRiskAssessment.getHindiGovernmentSchemes()),
                     normalizePercent(aiRiskAssessment.getExpectedSupplyImpactPercent()),
                     normalizePercent(aiRiskAssessment.getExpectedPriceIncreasePercent()),
                     normalizePercent(aiRiskAssessment.getEstimatedLossPercent()),

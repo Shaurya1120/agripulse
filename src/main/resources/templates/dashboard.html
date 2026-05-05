@@ -77,6 +77,14 @@
     </nav>
 
     <main class="relative mx-auto max-w-7xl px-6 py-8 lg:py-10">
+        <section class="mb-8 rounded-[28px] border border-line bg-white p-6 shadow-panel">
+            <p class="text-sm font-semibold uppercase tracking-[0.26em] text-agri">About Us</p>
+            <h2 class="mt-2 text-2xl font-bold text-slate-950">AgriPulse helps buyers, exporters, farmers, and producers understand crop risk fast.</h2>
+            <p class="interactive-copy mt-3 max-w-4xl text-sm leading-7 text-slate-600">
+                We explain the local disruption, estimate possible loss, and turn the result into a simple action plan with weather, charts, and exportable reports.
+            </p>
+        </section>
+
         <section id="overview" class="grid gap-8 xl:grid-cols-[1.3fr_0.7fr]">
             <article class="overflow-hidden rounded-[36px] border border-emerald-100 bg-white shadow-soft">
                 <div class="relative">
@@ -235,14 +243,17 @@
 
                     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <p class="interactive-copy max-w-xl text-sm leading-7 text-slate-500">Use this desk when you want a simple business answer: what is going wrong, how serious it is, how much it may cost, and what to do now.</p>
-                        <button id="enterpriseAnalyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-agri px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:-translate-y-0.5 hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70">
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 20V10"></path>
-                                <path d="M18 20V4"></path>
-                                <path d="M6 20v-4"></path>
-                            </svg>
-                            <span id="enterpriseAnalyzeButtonLabel">Analyze Enterprise Risk</span>
-                        </button>
+                        <div class="flex flex-wrap gap-3">
+                            <button id="enterpriseAnalyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-agri px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:-translate-y-0.5 hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20V10"></path>
+                                    <path d="M18 20V4"></path>
+                                    <path d="M6 20v-4"></path>
+                                </svg>
+                                <span id="enterpriseAnalyzeButtonLabel">Analyze Enterprise Risk</span>
+                            </button>
+                            <button id="enterprisePdfButton" type="button" class="rounded-full border border-agri bg-agriSoft px-5 py-3 text-sm font-semibold text-agri transition hover:bg-emerald-100">Generate Buyer PDF</button>
+                        </div>
                     </div>
                 </form>
             </article>
@@ -334,14 +345,17 @@
                         </div>
                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <p class="interactive-copy max-w-xl text-sm leading-7 text-slate-500">Use this desk when you want a producer view: what may happen, how much income is at risk, what to do now, and which schemes may help.</p>
-                            <button id="farmerAnalyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-dataBlue px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">
-                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 20h16"></path>
-                                    <path d="M7 16c0-2 1.5-3.5 3.5-3.5H13"></path>
-                                    <path d="M12 3v17"></path>
-                                </svg>
-                                <span id="farmerAnalyzeButtonLabel">Analyze Farmer Risk</span>
-                            </button>
+                            <div class="flex flex-wrap gap-3">
+                                <button id="farmerAnalyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-dataBlue px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 20h16"></path>
+                                        <path d="M7 16c0-2 1.5-3.5 3.5-3.5H13"></path>
+                                        <path d="M12 3v17"></path>
+                                    </svg>
+                                    <span id="farmerAnalyzeButtonLabel">Analyze Farmer Risk</span>
+                                </button>
+                                <button id="farmerPdfButton" type="button" class="rounded-full border border-dataBlue bg-skySoft px-5 py-3 text-sm font-semibold text-dataBlue transition hover:bg-sky-100">Generate Farmer PDF</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -422,9 +436,32 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex flex-wrap gap-3">
-                    <button id="enterprisePdfButton" type="button" class="rounded-full bg-agri px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">Generate Enterprise PDF</button>
-                    <button id="farmerPdfButton" type="button" class="rounded-full bg-dataBlue px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700">Generate Farmer PDF</button>
+                <div class="mt-6 rounded-3xl border border-dataBlue/20 bg-sky-50 p-5">
+                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Farmer Explanation In Hindi</p>
+                    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+                        <div class="rounded-2xl border border-sky-100 bg-white p-4">
+                            <p class="text-sm font-semibold text-slate-900">Hindi Summary</p>
+                            <p id="farmerHindiSummary" class="mt-2 text-sm leading-7 text-slate-700">हिंदी सारांश यहां दिखाई देगा।</p>
+                        </div>
+                        <div class="rounded-2xl border border-sky-100 bg-white p-4">
+                            <p class="text-sm font-semibold text-slate-900">Hindi Problem</p>
+                            <p id="farmerHindiProblem" class="mt-2 text-sm leading-7 text-slate-700">हिंदी में समस्या का विवरण यहां दिखाई देगा।</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+                        <div class="rounded-2xl border border-sky-100 bg-white p-4">
+                            <p class="text-sm font-semibold text-slate-900">Hindi Actions</p>
+                            <ul id="farmerHindiActionsList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                                <li>हिंदी कार्ययोजना यहां दिखाई देगी।</li>
+                            </ul>
+                        </div>
+                        <div class="rounded-2xl border border-sky-100 bg-white p-4">
+                            <p class="text-sm font-semibold text-slate-900">Hindi Scheme Notes</p>
+                            <ul id="farmerHindiSchemesList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                                <li>योजना जानकारी यहां दिखाई देगी।</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"></div>
@@ -621,6 +658,9 @@
                 <p class="text-sm text-slate-400">Tip: sort the table to compare crops and mitigation patterns side by side.</p>
             </div>
         </section>
+        <footer class="mt-10 pb-6 text-center text-sm text-slate-500">
+            Developed by Shaurya Rathi
+        </footer>
     </main>
 </div>
 
@@ -708,6 +748,10 @@
     const enterpriseActionsList = document.getElementById('enterpriseActionsList');
     const farmerActionsList = document.getElementById('farmerActionsList');
     const governmentSchemesList = document.getElementById('governmentSchemesList');
+    const farmerHindiSummary = document.getElementById('farmerHindiSummary');
+    const farmerHindiProblem = document.getElementById('farmerHindiProblem');
+    const farmerHindiActionsList = document.getElementById('farmerHindiActionsList');
+    const farmerHindiSchemesList = document.getElementById('farmerHindiSchemesList');
 
     const weatherRegion = document.getElementById('weatherRegion');
     const weatherSummary = document.getElementById('weatherSummary');
@@ -1116,6 +1160,10 @@
         renderList(enterpriseActionsList, data.enterpriseActions, 'No enterprise actions returned.');
         renderList(farmerActionsList, data.farmerActions, 'No farmer actions returned.');
         renderList(governmentSchemesList, data.governmentSchemes, 'No scheme note returned.');
+        farmerHindiSummary.textContent = data.hindiDisruptionSummary || data.disruptionSummary || 'हिंदी सारांश उपलब्ध नहीं है।';
+        farmerHindiProblem.textContent = data.hindiDetailedProblem || data.detailedProblem || 'हिंदी समस्या विवरण उपलब्ध नहीं है।';
+        renderList(farmerHindiActionsList, data.hindiFarmerActions, 'हिंदी कार्ययोजना उपलब्ध नहीं है।');
+        renderList(farmerHindiSchemesList, data.hindiGovernmentSchemes, 'हिंदी योजना जानकारी उपलब्ध नहीं है।');
     }
 
     async function fetchWeather(region) {
@@ -1313,12 +1361,197 @@
         return cursor + 2;
     }
 
-    async function generatePdfReport(reportType) {
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            showError('The PDF tool is still loading. Please try again in a moment.');
-            return;
-        }
+    function escapeHtml(value) {
+        return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+    }
 
+    function toHtmlList(items, fallback) {
+        const safeItems = (items && items.length ? items : [fallback]).map(item => `<li>${escapeHtml(item)}</li>`);
+        return `<ul>${safeItems.join('')}</ul>`;
+    }
+
+    function chartImageOrNull(chart) {
+        try {
+            return chart ? chart.toBase64Image() : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function buildPrintReportHtml(reportType, response, request, cropImage, priceChartImage, riskChartImage) {
+        const reportTitle = reportType === 'Farmer' ? 'AgriPulse Farmer Resilience Report' : 'AgriPulse Enterprise Risk Brief';
+        const englishActionList = reportType === 'Farmer'
+                ? toHtmlList(response.farmerActions, 'No farmer action returned.')
+                : toHtmlList(response.enterpriseActions, 'No enterprise action returned.');
+        const schemeList = toHtmlList(response.governmentSchemes, 'No scheme note returned.');
+        const hindiFarmerActionList = toHtmlList(response.hindiFarmerActions?.length ? response.hindiFarmerActions : response.farmerActions, 'कोई किसान कार्ययोजना उपलब्ध नहीं है।');
+        const hindiSchemeList = toHtmlList(response.hindiGovernmentSchemes?.length ? response.hindiGovernmentSchemes : response.governmentSchemes, 'कोई योजना सूचना उपलब्ध नहीं है।');
+        const lossBreakdown = [
+            request.quantityTonnes ? `Quantity: ${escapeHtml(request.quantityTonnes)} tonnes` : null,
+            request.cropRatePerKgInr ? `Crop rate: INR ${escapeHtml(request.cropRatePerKgInr)} per kg` : null,
+            request.farmAreaAcres ? `Farm area: ${escapeHtml(request.farmAreaAcres)} acres` : null,
+            request.planningHorizonDays ? `Planning horizon: ${escapeHtml(request.planningHorizonDays)} days` : null,
+            response.estimatedLossPercent != null ? `Estimated loss: ${escapeHtml(response.estimatedLossPercent)}%` : null,
+            `Estimated rupee loss: ${escapeHtml(formatCurrency(response.estimatedLossInr))}`
+        ].filter(Boolean);
+
+        const enterpriseGuidance = reportType === 'Enterprise'
+                ? `<div class="card">
+                        <h3>Concrete Buyer / Exporter Plan</h3>
+                        <p>${escapeHtml(response.mitigationStrategy || 'No mitigation strategy returned.')}</p>
+                        <p class="muted">These actions should be read as direct business actions. Use the named lower-risk corridors, cheaper nearby sourcing belts, or alternate procurement zones mentioned in the report before widening purchases blindly.</p>
+                    </div>`
+                : '';
+
+        const farmerHindiSection = reportType === 'Farmer'
+                ? `<section class="page-break">
+                        <h2>किसान रिपोर्ट - हिंदी</h2>
+                        <div class="card">
+                            <h3>समस्या का सार</h3>
+                            <p>${escapeHtml(response.hindiDisruptionSummary || response.disruptionSummary || '')}</p>
+                        </div>
+                        <div class="card">
+                            <h3>मुख्य खतरा</h3>
+                            <p>${escapeHtml(response.hindiPrimaryThreat || response.primaryThreat || '')}</p>
+                            <p>${escapeHtml(response.hindiDetailedProblem || response.detailedProblem || '')}</p>
+                        </div>
+                        <div class="card">
+                            <h3>संभावित नुकसान</h3>
+                            <p>${escapeHtml(formatCurrency(response.estimatedLossInr))}</p>
+                            <p>${escapeHtml(response.cropName)} के लिए अनुमानित प्रभाव ${escapeHtml(response.estimatedLossPercent ?? '--')}% तक हो सकता है।</p>
+                        </div>
+                        <div class="grid two">
+                            <div class="card">
+                                <h3>क्या करें</h3>
+                                ${hindiFarmerActionList}
+                            </div>
+                            <div class="card">
+                                <h3>सरकारी योजना</h3>
+                                ${hindiSchemeList}
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>योजना बी</h3>
+                            <p>${escapeHtml(response.hindiMitigationStrategy || response.mitigationStrategy || '')}</p>
+                        </div>
+                    </section>`
+                : '';
+
+        return `<!DOCTYPE html>
+<html lang="${reportType === 'Farmer' ? 'en' : 'en'}">
+<head>
+    <meta charset="UTF-8">
+    <title>${escapeHtml(reportTitle)} - ${escapeHtml(response.cropName)} - ${escapeHtml(response.region)}</title>
+    <style>
+        body { font-family: Arial, "Noto Sans Devanagari", "Mangal", sans-serif; color: #0f172a; margin: 0; background: #f8fafc; }
+        .page { max-width: 960px; margin: 0 auto; background: white; padding: 32px; }
+        .header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+        .title { font-size: 32px; font-weight: 800; margin: 0 0 8px; }
+        .sub { color: #475569; font-size: 14px; line-height: 1.6; }
+        .hero-img { width: 210px; height: 140px; object-fit: cover; border-radius: 18px; border: 1px solid #e2e8f0; }
+        .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+        .metric, .card { border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; background: #fff; }
+        .metric strong { display: block; font-size: 24px; margin-top: 8px; }
+        .grid { display: grid; gap: 16px; }
+        .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        h2 { font-size: 26px; margin: 26px 0 12px; }
+        h3 { font-size: 18px; margin: 0 0 10px; }
+        p, li { font-size: 14px; line-height: 1.7; }
+        ul { margin: 0; padding-left: 18px; }
+        .muted { color: #475569; }
+        .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+        .chart { border: 1px solid #e2e8f0; border-radius: 18px; padding: 12px; }
+        .chart img { width: 100%; border-radius: 12px; }
+        .footer { margin-top: 24px; text-align: center; color: #64748b; font-size: 12px; }
+        .page-break { page-break-before: always; margin-top: 28px; }
+        @media print {
+            body { background: white; }
+            .page { max-width: 100%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div>
+                <p class="sub" style="color:#166534;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;">AgriPulse Report</p>
+                <h1 class="title">${escapeHtml(reportTitle)}</h1>
+                <p class="sub"><strong>Crop:</strong> ${escapeHtml(response.cropName)}<br><strong>Location:</strong> ${escapeHtml(response.region)}<br><strong>Risk Level:</strong> ${escapeHtml(response.riskLevel)}<br><strong>Primary Threat:</strong> ${escapeHtml(response.primaryThreat || 'Not specified')}</p>
+                <p class="sub"><strong>Weather:</strong> ${escapeHtml(weatherRegion.textContent)} | ${escapeHtml(weatherTemperature.textContent)} | ${escapeHtml(weatherWind.textContent)}</p>
+            </div>
+            <img class="hero-img" src="${cropImage}" alt="${escapeHtml(response.cropName)}">
+        </div>
+
+        <div class="metrics">
+            <div class="metric"><span class="muted">Supply Impact</span><strong>${escapeHtml(response.expectedSupplyImpactPercent != null ? `${response.expectedSupplyImpactPercent}%` : '--')}</strong></div>
+            <div class="metric"><span class="muted">Price Pressure</span><strong>${escapeHtml(response.expectedPriceIncreasePercent != null ? `${response.expectedPriceIncreasePercent}%` : '--')}</strong></div>
+            <div class="metric"><span class="muted">Estimated Loss</span><strong>${escapeHtml(formatCurrency(response.estimatedLossInr))}</strong></div>
+        </div>
+
+        <div class="grid two">
+            <div class="card">
+                <h3>What is happening?</h3>
+                <p>${escapeHtml(response.disruptionSummary || 'No disruption summary returned.')}</p>
+            </div>
+            <div class="card">
+                <h3>Actual problem in this area</h3>
+                <p>${escapeHtml(response.detailedProblem || 'No detailed problem explanation returned.')}</p>
+            </div>
+        </div>
+
+        <div class="grid two" style="margin-top:16px;">
+            <div class="card">
+                <h3>Risk Factors</h3>
+                ${toHtmlList(response.riskFactors, 'No risk factor returned.')}
+            </div>
+            <div class="card">
+                <h3>${reportType === 'Farmer' ? 'Farmer Action Plan' : 'Buyer / Exporter Action Plan'}</h3>
+                ${englishActionList}
+            </div>
+        </div>
+
+        ${enterpriseGuidance}
+
+        <div class="charts">
+            <div class="chart">
+                <h3>Price Trend Chart</h3>
+                ${priceChartImage ? `<img src="${priceChartImage}" alt="Price trend chart">` : '<p class="muted">Chart not available.</p>'}
+            </div>
+            <div class="chart">
+                <h3>Risk Breakdown Chart</h3>
+                ${riskChartImage ? `<img src="${riskChartImage}" alt="Risk breakdown chart">` : '<p class="muted">Chart not available.</p>'}
+            </div>
+        </div>
+
+        <div class="grid two">
+            <div class="card">
+                <h3>Loss Calculation</h3>
+                ${toHtmlList(lossBreakdown, 'No loss detail available.')}
+            </div>
+            <div class="card">
+                <h3>${reportType === 'Farmer' ? 'Plan B and Protection' : 'Plan B and Sourcing Route'}</h3>
+                <p>${escapeHtml(response.mitigationStrategy || 'No mitigation strategy returned.')}</p>
+            </div>
+        </div>
+
+        ${reportType === 'Farmer'
+                ? `<div class="card" style="margin-top:16px;"><h3>Government Schemes</h3>${schemeList}</div>`
+                : `<div class="card" style="margin-top:16px;"><h3>Executive Note</h3><p>${escapeHtml(riskNarrative(response.riskLevel, response.primaryThreat))}</p></div>`}
+
+        ${farmerHindiSection}
+
+        <div class="footer">Developed by Shaurya Rathi</div>
+    </div>
+</body>
+</html>`;
+    }
+
+    async function generatePdfReport(reportType) {
         if (!latestReportContext) {
             showError('Run an analysis first so AgriPulse has a report to export.');
             return;
@@ -1328,107 +1561,22 @@
         const cropKey = normalizeCropKeyFromName(response.cropName);
         const cropAsset = cropLibrary[cropKey];
         const cropImage = await svgToPngDataUrl(cropAsset.fallbackImage);
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
+        const priceChartImage = chartImageOrNull(priceTrendChart);
+        const riskChartImage = chartImageOrNull(riskBreakdownChart);
+        const printableWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=900');
 
-        pdf.setFillColor(22, 101, 52);
-        pdf.rect(0, 0, 210, 18, 'F');
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(11);
-        pdf.text(reportType === 'Farmer' ? 'AgriPulse Farmer Resilience Report' : 'AgriPulse Enterprise Risk Brief', 20, 11);
-
-        pdf.setTextColor(15, 23, 42);
-        pdf.setFontSize(22);
-        pdf.text(`${response.cropName} | ${response.region}`, 20, 30);
-        pdf.setFontSize(11);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(`Stakeholder: ${reportType}`, 20, 38);
-        pdf.text(`Risk Level: ${response.riskLevel}`, 20, 45);
-        pdf.text(`Primary Threat: ${response.primaryThreat || 'Not specified'}`, 20, 52);
-        pdf.text(`Weather Snapshot: ${weatherRegion.textContent} | ${weatherTemperature.textContent} | ${weatherWind.textContent}`, 20, 59, { maxWidth: 115 });
-
-        pdf.addImage(cropImage, 'PNG', 145, 24, 45, 34);
-
-        pdf.setDrawColor(229, 231, 235);
-        pdf.roundedRect(20, 68, 52, 24, 5, 5);
-        pdf.roundedRect(79, 68, 52, 24, 5, 5);
-        pdf.roundedRect(138, 68, 52, 24, 5, 5);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.text('Supply Impact', 26, 76);
-        pdf.text('Price Pressure', 85, 76);
-        pdf.text('Estimated Loss', 144, 76);
-        pdf.setFontSize(16);
-        pdf.text(response.expectedSupplyImpactPercent != null ? `${response.expectedSupplyImpactPercent}%` : '--', 26, 87);
-        pdf.text(response.expectedPriceIncreasePercent != null ? `${response.expectedPriceIncreasePercent}%` : '--', 85, 87);
-        pdf.text(response.estimatedLossInr != null ? formatCurrency(response.estimatedLossInr) : 'Not calculated', 144, 87, { maxWidth: 40 });
-
-        let y = 105;
-        y = writePdfSection(pdf, '1. What problem is disrupting this area?', [
-            response.disruptionSummary || 'No disruption summary was returned.',
-            response.detailedProblem || 'No detailed problem explanation was returned.'
-        ], y);
-
-        const factorLines = (response.riskFactors || []).length
-                ? response.riskFactors.map((factor, index) => `${index + 1}. ${factor}`)
-                : ['No risk factors were returned by the model.'];
-        y = writePdfSection(pdf, '2. Key disruption factors', factorLines, y);
-
-        y = ensurePdfSpace(pdf, y, 90);
-        if (priceTrendChart) {
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(13);
-            pdf.text('3. Price Trend Chart', 20, y);
-            y += 5;
-            pdf.addImage(priceTrendChart.toBase64Image(), 'PNG', 20, y, 80, 45);
-            if (riskBreakdownChart) {
-                pdf.addImage(riskBreakdownChart.toBase64Image(), 'PNG', 110, y, 80, 45);
-            }
-            y += 52;
+        if (!printableWindow) {
+            showError('Please allow popups so AgriPulse can open the report for PDF export.');
+            return;
         }
 
-        const lossExplanation = [];
-        if (request.quantityTonnes) {
-            lossExplanation.push(`Quantity considered: ${request.quantityTonnes} tonnes.`);
-        }
-        if (request.cropRatePerKgInr) {
-            lossExplanation.push(`Crop rate considered: INR ${request.cropRatePerKgInr} per kg.`);
-        }
-        if (request.farmAreaAcres) {
-            lossExplanation.push(`Farm area considered: ${request.farmAreaAcres} acres.`);
-        }
-        if (request.planningHorizonDays) {
-            lossExplanation.push(`Planning horizon considered: ${request.planningHorizonDays} days.`);
-        }
-        if (response.estimatedLossPercent != null) {
-            lossExplanation.push(`Estimated loss percent from the AI assessment: ${response.estimatedLossPercent}%.`);
-        }
-        lossExplanation.push(`Estimated rupee loss: ${formatCurrency(response.estimatedLossInr)}.`);
-        y = writePdfSection(pdf, '4. Exposure and loss calculation', lossExplanation, y);
-
-        const actionLines = reportType === 'Farmer'
-                ? (response.farmerActions || []).map((item, index) => `${index + 1}. ${item}`)
-                : (response.enterpriseActions || []).map((item, index) => `${index + 1}. ${item}`);
-        y = writePdfSection(
-                pdf,
-                reportType === 'Farmer' ? '5. Farmer action plan' : '5. Enterprise action plan',
-                actionLines.length ? actionLines : ['No role-specific actions were returned.'],
-                y
-        );
-
-        y = writePdfSection(pdf, '6. Plan B strategy', [response.mitigationStrategy || 'No mitigation strategy returned.'], y);
-
-        if (reportType === 'Farmer') {
-            const schemeLines = (response.governmentSchemes || []).length
-                    ? response.governmentSchemes.map((item, index) => `${index + 1}. ${item}`)
-                    : ['No farmer scheme note was returned by the model.'];
-            y = writePdfSection(pdf, '7. Farmer schemes and support notes', schemeLines, y);
-        } else {
-            y = writePdfSection(pdf, '7. Executive note', [riskNarrative(response.riskLevel, response.primaryThreat)], y);
-        }
-
-        pdf.save(`agripulse-${reportType.toLowerCase()}-${response.cropName.toLowerCase().replace(/\s+/g, '-')}-${response.region.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+        printableWindow.document.open();
+        printableWindow.document.write(buildPrintReportHtml(reportType, response, request, cropImage, priceChartImage, riskChartImage));
+        printableWindow.document.close();
+        printableWindow.focus();
+        printableWindow.onload = () => {
+            printableWindow.print();
+        };
     }
 
     enterpriseForm.addEventListener('submit', event => {

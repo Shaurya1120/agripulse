@@ -25,6 +25,12 @@ public class AiRiskAssessment {
     private List<String> enterpriseActions;
     private List<String> farmerActions;
     private List<String> governmentSchemes;
+    private String hindiDisruptionSummary;
+    private String hindiPrimaryThreat;
+    private String hindiDetailedProblem;
+    private String hindiMitigationStrategy;
+    private List<String> hindiFarmerActions;
+    private List<String> hindiGovernmentSchemes;
     private Integer expectedSupplyImpactPercent;
     private Integer expectedPriceIncreasePercent;
     private Integer estimatedLossPercent;

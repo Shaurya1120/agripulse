@@ -29,6 +29,12 @@ public class RiskAnalysisResponse {
     private List<String> enterpriseActions;
     private List<String> farmerActions;
     private List<String> governmentSchemes;
+    private String hindiDisruptionSummary;
+    private String hindiPrimaryThreat;
+    private String hindiDetailedProblem;
+    private String hindiMitigationStrategy;
+    private List<String> hindiFarmerActions;
+    private List<String> hindiGovernmentSchemes;
     private Integer expectedSupplyImpactPercent;
     private Integer expectedPriceIncreasePercent;
     private Integer estimatedLossPercent;
@@ -49,6 +55,8 @@ public class RiskAnalysisResponse {
         response.setEnterpriseActions(List.of());
         response.setFarmerActions(List.of());
         response.setGovernmentSchemes(List.of());
+        response.setHindiFarmerActions(List.of());
+        response.setHindiGovernmentSchemes(List.of());
         return response;
     }
 }
