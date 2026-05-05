@@ -7,6 +7,7 @@ import com.agripulse.app.dto.RiskAnalysisResponse;
 import com.agripulse.app.dto.RiskMapPoint;
 import com.agripulse.app.dto.UiDashboardData;
 import com.agripulse.app.model.RiskReport;
+import com.agripulse.app.model.UserAccount;
 import com.agripulse.app.repository.RiskReportRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -65,13 +66,15 @@ public class AgriService {
     private final RiskReportRepository riskReportRepository;
     private final EmergencyAlertTool emergencyAlertTool;
     private final MandiPriceService mandiPriceService;
+    private final UserAccountService userAccountService;
 
-    public RiskAnalysisResponse analyzeRisk(RiskAnalysisRequest request) {
+    public RiskAnalysisResponse analyzeRisk(RiskAnalysisRequest request, String userEmail) {
         if (request == null) {
             throw new IllegalArgumentException("Request body is required.");
         }
 
         try {
+            UserAccount userAccount = userAccountService.getRequiredUser(userEmail);
             WeatherEvidence weatherEvidence = buildWeatherEvidence(request);
             String stakeholderType = normalizeStakeholderType(request);
             MandiPriceService.MarketEvidence marketEvidence = mandiPriceService.findMarketEvidence(
@@ -160,6 +163,7 @@ public class AgriService {
             riskReport.setRegion(request.getRegion().trim());
             riskReport.setRiskLevel(adjustedRiskLevel);
             riskReport.setMitigationStrategy(normalizeMitigationStrategy(aiRiskAssessment));
+            riskReport.setUserAccount(userAccount);
 
             RiskReport savedRiskReport = riskReportRepository.save(riskReport);
 
@@ -937,11 +941,12 @@ public class AgriService {
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 
-    public HistoryPageResponse getHistoryPage(int page, int size) {
+    public HistoryPageResponse getHistoryPage(String userEmail, int page, int size) {
+        UserAccount userAccount = userAccountService.getRequiredUser(userEmail);
         int sanitizedPage = Math.max(page, 0);
         int sanitizedSize = Math.min(Math.max(size, 1), 20);
 
-        Page<RiskReport> reports = riskReportRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(sanitizedPage, sanitizedSize));
+        Page<RiskReport> reports = riskReportRepository.findAllByUserAccountOrderByCreatedAtDesc(userAccount, PageRequest.of(sanitizedPage, sanitizedSize));
 
         return new HistoryPageResponse(
                 reports.getContent().stream().map(RiskAnalysisResponse::fromEntity).toList(),
@@ -952,8 +957,9 @@ public class AgriService {
         );
     }
 
-    public UiDashboardData getDashboardData() {
-        Page<RiskReport> recentReportsPage = riskReportRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 50));
+    public UiDashboardData getDashboardData(String userEmail) {
+        UserAccount userAccount = userAccountService.getRequiredUser(userEmail);
+        Page<RiskReport> recentReportsPage = riskReportRepository.findAllByUserAccountOrderByCreatedAtDesc(userAccount, PageRequest.of(0, 50));
         var recentReports = recentReportsPage.getContent();
 
         Map<String, java.util.List<RiskReport>> groupedByRegion = recentReports.stream()

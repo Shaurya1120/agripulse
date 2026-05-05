@@ -4,6 +4,7 @@ import com.agripulse.app.dto.AiRiskAssessment;
 import com.agripulse.app.dto.RiskAnalysisRequest;
 import com.agripulse.app.dto.RiskAnalysisResponse;
 import com.agripulse.app.model.RiskReport;
+import com.agripulse.app.model.UserAccount;
 import com.agripulse.app.repository.RiskReportRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,13 +40,22 @@ class AgriServiceTest {
     @Mock
     private MandiPriceService mandiPriceService;
 
+    @Mock
+    private UserAccountService userAccountService;
+
     private EmergencyAlertTool emergencyAlertTool;
     private AgriService agriService;
+    private UserAccount userAccount;
 
     @BeforeEach
     void setUp() {
         emergencyAlertTool = new EmergencyAlertTool();
-        agriService = new AgriService(chatClient, riskReportRepository, emergencyAlertTool, mandiPriceService);
+        agriService = new AgriService(chatClient, riskReportRepository, emergencyAlertTool, mandiPriceService, userAccountService);
+        userAccount = new UserAccount();
+        userAccount.setId(1L);
+        userAccount.setFullName("Shaurya Rathi");
+        userAccount.setEmail("shaurya@example.com");
+        when(userAccountService.getRequiredUser("shaurya@example.com")).thenReturn(userAccount);
     }
 
     @Test
@@ -75,7 +85,7 @@ class AgriServiceTest {
             return saved;
         });
 
-        RiskAnalysisResponse response = agriService.analyzeRisk(request);
+        RiskAnalysisResponse response = agriService.analyzeRisk(request, "shaurya@example.com");
 
         ArgumentCaptor<RiskReport> riskReportCaptor = ArgumentCaptor.forClass(RiskReport.class);
         org.mockito.Mockito.verify(riskReportRepository).save(riskReportCaptor.capture());
@@ -86,6 +96,7 @@ class AgriServiceTest {
         assertThat(savedRiskReport.getRegion()).isEqualTo("Punjab");
         assertThat(savedRiskReport.getRiskLevel()).isEqualTo("High");
         assertThat(savedRiskReport.getMitigationStrategy()).contains("Shift part of sourcing");
+        assertThat(savedRiskReport.getUserAccount()).isEqualTo(userAccount);
 
         assertThat(response.getId()).isEqualTo(99L);
         assertThat(response.getRiskLevel()).isEqualTo("High");
@@ -120,7 +131,7 @@ class AgriServiceTest {
             return saved;
         });
 
-        RiskAnalysisResponse response = agriService.analyzeRisk(request);
+        RiskAnalysisResponse response = agriService.analyzeRisk(request, "shaurya@example.com");
 
         assertThat(response.getRiskLevel()).isEqualTo("No Risk");
         assertThat(response.getPrimaryThreat()).isEqualTo("Stable weather conditions");
@@ -173,7 +184,7 @@ class AgriServiceTest {
             return saved;
         });
 
-        RiskAnalysisResponse response = agriService.analyzeRisk(request);
+        RiskAnalysisResponse response = agriService.analyzeRisk(request, "shaurya@example.com");
 
         assertThat(response.getRiskLevel()).isEqualTo("Very High");
         assertThat(response.getExpectedPriceIncreasePercent()).isEqualTo(50);

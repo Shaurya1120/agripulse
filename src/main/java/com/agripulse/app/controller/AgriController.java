@@ -5,6 +5,8 @@ import com.agripulse.app.dto.RiskAnalysisResponse;
 import com.agripulse.app.service.AgriService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,16 +31,17 @@ public class AgriController {
     public ResponseEntity<RiskAnalysisResponse> analyzeRisk(
             // @RequestBody tells Spring to read the incoming JSON body
             // and convert it into a Java object for us.
-            @Valid @RequestBody RiskAnalysisRequest request) {
+            @Valid @RequestBody RiskAnalysisRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        return ResponseEntity.ok(agriService.analyzeRisk(request));
+        return ResponseEntity.ok(agriService.analyzeRisk(request, userDetails.getUsername()));
     }
 
     @GetMapping("/history")
     public ResponseEntity<?> getHistory(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        return ResponseEntity.ok(agriService.getHistoryPage(page, size));
+            @RequestParam(defaultValue = "5") int size,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(agriService.getHistoryPage(userDetails.getUsername(), page, size));
     }
 }
-

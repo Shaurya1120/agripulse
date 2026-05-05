@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>AgriPulse | Supply Chain Risk & Farmer Resilience</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,6 +65,7 @@
                 <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#enterpriseDesk">Enterprise Desk</a>
                 <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#farmerDesk">Farmer Desk</a>
                 <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#history">History</a>
+                <div class="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700" th:text="${currentUserEmail}">user@example.com</div>
                 <button id="pdfButton" type="button" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-dataBlue hover:text-dataBlue">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"></path>
@@ -72,6 +75,10 @@
                     </svg>
                     Export Current Report
                 </button>
+                <form th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-rose-300 hover:text-rose-600">Log Out</button>
+                </form>
             </div>
         </div>
     </nav>
@@ -876,6 +883,8 @@
     const applyCropPresetFarmer = document.getElementById('applyCropPresetFarmer');
     const aboutHeroImage = document.getElementById('aboutHeroImage');
     const aboutHeroCaption = document.getElementById('aboutHeroCaption');
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
 
     const localPhotoLibrary = {
         wheatField: '/images/photos/wheat-field.jpg',
@@ -1446,9 +1455,13 @@
 
         try {
             payload.weatherContext = await fetchWeather(payload.region);
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken;
+            }
             const response = await fetch('/api/risk/analyze', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(payload)
             });
 
