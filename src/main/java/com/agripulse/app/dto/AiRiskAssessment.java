@@ -1,6 +1,7 @@
 package com.agripulse.app.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,14 @@ public class AiRiskAssessment {
 
     private String riskLevel;
     private String mitigationStrategy;
+    private String disruptionSummary;
+    private String primaryThreat;
+    private String detailedProblem;
+    private List<String> riskFactors;
+    private List<String> enterpriseActions;
+    private List<String> farmerActions;
+    private List<String> governmentSchemes;
+    private Integer expectedSupplyImpactPercent;
+    private Integer expectedPriceIncreasePercent;
+    private Integer estimatedLossPercent;
 }
-

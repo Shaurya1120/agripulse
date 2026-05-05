@@ -31,14 +31,16 @@ class AgriControllerTest {
 
     @Test
     void analyzeRiskReturnsSavedRiskReport() throws Exception {
-        RiskAnalysisRequest request = new RiskAnalysisRequest("Wheat", "Punjab");
-        RiskAnalysisResponse response = new RiskAnalysisResponse(
-                1L,
-                "Wheat",
-                "Punjab",
-                "Medium",
-                "Use alternate suppliers and increase cold-storage planning."
-        );
+        RiskAnalysisRequest request = new RiskAnalysisRequest();
+        request.setCropName("Wheat");
+        request.setRegion("Punjab");
+
+        RiskAnalysisResponse response = new RiskAnalysisResponse();
+        response.setId(1L);
+        response.setCropName("Wheat");
+        response.setRegion("Punjab");
+        response.setRiskLevel("Medium");
+        response.setMitigationStrategy("Use alternate suppliers and increase cold-storage planning.");
 
         when(agriService.analyzeRisk(any(RiskAnalysisRequest.class))).thenReturn(response);
 

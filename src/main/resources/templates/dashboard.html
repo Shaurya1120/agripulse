@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriPulse Intelligence Console</title>
+    <title>AgriPulse | Supply Chain Risk & Farmer Resilience</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,21 +13,22 @@
             theme: {
                 extend: {
                     colors: {
-                        surface: '#FFFFFF',
                         canvas: '#F8FAFC',
-                        line: '#F3F4F6',
+                        line: '#E5E7EB',
                         agri: '#166534',
                         agriSoft: '#E8F5EC',
+                        skySoft: '#E0F2FE',
                         dataBlue: '#0369A1',
+                        warning: '#B45309',
                         ink: '#0F172A',
                         muted: '#64748B'
                     },
+                    boxShadow: {
+                        soft: '0 20px 45px rgba(15, 23, 42, 0.08)',
+                        panel: '0 12px 32px rgba(15, 23, 42, 0.06)'
+                    },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif']
-                    },
-                    boxShadow: {
-                        soft: '0 18px 45px rgba(15, 23, 42, 0.08)',
-                        panel: '0 10px 30px rgba(15, 23, 42, 0.06)'
                     }
                 }
             }
@@ -38,9 +39,9 @@
 </head>
 <body class="min-h-screen bg-canvas font-sans text-ink">
 <div class="relative overflow-hidden">
-    <div class="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-emerald-50 via-white to-transparent"></div>
+    <div class="absolute inset-x-0 top-0 h-[28rem] bg-gradient-to-b from-emerald-50 via-white to-transparent"></div>
 
-    <nav class="sticky top-0 z-30 border-b border-line/90 bg-white/90 backdrop-blur">
+    <nav class="sticky top-0 z-30 border-b border-line/80 bg-white/90 backdrop-blur">
         <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <div class="flex items-center gap-3">
                 <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-agri text-white shadow-panel">
@@ -57,11 +58,11 @@
                     <h1 class="text-2xl font-extrabold tracking-tight text-ink">AgriPulse</h1>
                 </div>
             </div>
-
             <div class="hidden items-center gap-6 lg:flex">
-                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#analysis">Analysis</a>
-                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#pulse">The Pulse</a>
-                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#history">Disruption Logs</a>
+                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#overview">Overview</a>
+                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#enterpriseDesk">Enterprise Desk</a>
+                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#farmerDesk">Farmer Desk</a>
+                <a class="text-sm font-medium text-slate-600 transition hover:text-agri" href="#history">History</a>
                 <button id="pdfButton" type="button" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-dataBlue hover:text-dataBlue">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"></path>
@@ -69,164 +70,191 @@
                         <path d="M8 13h8"></path>
                         <path d="M8 17h5"></path>
                     </svg>
-                    Generate PDF Report
+                    Export Current Report
                 </button>
             </div>
         </div>
     </nav>
 
     <main class="relative mx-auto max-w-7xl px-6 py-8 lg:py-10">
-        <section id="analysis" class="grid gap-8 lg:grid-cols-[1.55fr_0.95fr]">
-            <article class="overflow-hidden rounded-[32px] border border-emerald-100 bg-white shadow-soft">
+        <section id="overview" class="grid gap-8 xl:grid-cols-[1.3fr_0.7fr]">
+            <article class="overflow-hidden rounded-[36px] border border-emerald-100 bg-white shadow-soft">
                 <div class="relative">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(22,101,52,0.14),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(3,105,161,0.10),_transparent_28%)]"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-emerald-50/90"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(22,101,52,0.12),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(3,105,161,0.10),_transparent_30%)]"></div>
                     <div class="relative p-8 md:p-10">
-                        <div class="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                            <div class="max-w-2xl">
-                                <p class="text-sm font-semibold uppercase tracking-[0.32em] text-agri">AI Command Center</p>
-                                <h2 class="mt-3 text-4xl font-extrabold tracking-tight text-slate-950 md:text-5xl">Analyze agricultural risk with executive clarity.</h2>
-                                <p class="mt-4 max-w-xl text-base leading-7 text-slate-600">
-                                    Model region-specific disruption risk, estimated price pressure, and plan B strategy in one polished operating console.
-                                </p>
-                            </div>
-                            <div class="rounded-3xl border border-emerald-200 bg-white/80 px-5 py-4 text-sm text-slate-700 shadow-sm backdrop-blur">
-                                <p class="font-semibold text-agri">Suggested scenarios</p>
-                                <p class="mt-2">Turmeric in Erode, Basmati Rice in Punjab, Coffee in Karnataka</p>
-                            </div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.32em] text-agri">What AgriPulse Does</p>
+                        <h2 class="mt-3 max-w-3xl text-4xl font-extrabold tracking-tight text-slate-950 md:text-5xl">
+                            We turn crop risk into a clear action plan for
+                            <span class="text-agri">enterprises</span> and
+                            <span class="text-dataBlue">farmers</span>.
+                        </h2>
+                        <p class="interactive-copy mt-5 max-w-3xl text-base leading-8 text-slate-600">
+                            AgriPulse studies a crop and a region, estimates the supply chain disruption risk, explains the real problem behind that risk, and turns it into a practical response plan with loss estimates, charts, and role-specific reporting.
+                        </p>
+
+                        <div class="mt-8 grid gap-4 lg:grid-cols-3">
+                            <article class="rounded-3xl border border-line bg-slate-50 p-5 shadow-sm">
+                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">1. Explain</p>
+                                <h3 class="mt-3 text-lg font-bold text-slate-950">What is happening?</h3>
+                                <p class="interactive-copy mt-2 text-sm leading-7 text-slate-600">We describe whether the disruption comes from heat wave, crop disease, heavy rainfall, logistics stress, storage problems, or market shocks.</p>
+                            </article>
+                            <article class="rounded-3xl border border-line bg-slate-50 p-5 shadow-sm">
+                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">2. Quantify</p>
+                                <h3 class="mt-3 text-lg font-bold text-slate-950">What is the business impact?</h3>
+                                <p class="interactive-copy mt-2 text-sm leading-7 text-slate-600">We combine risk with quantity, price, and planning horizon so a buyer or producer can estimate likely rupee exposure.</p>
+                            </article>
+                            <article class="rounded-3xl border border-line bg-slate-50 p-5 shadow-sm">
+                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-warning">3. Respond</p>
+                                <h3 class="mt-3 text-lg font-bold text-slate-950">What should we do next?</h3>
+                                <p class="interactive-copy mt-2 text-sm leading-7 text-slate-600">We produce role-specific mitigation steps, from alternate sourcing and buffers to farmer resilience actions and scheme awareness.</p>
+                            </article>
                         </div>
-
-                        <form id="riskForm" class="grid gap-5">
-                            <div class="grid gap-4 md:grid-cols-2">
-                                <label class="rounded-3xl border border-line bg-white/90 p-4 shadow-sm">
-                                    <div class="mb-3 flex items-center gap-3">
-                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-agriSoft text-agri">
-                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M12 3v18"></path>
-                                                <path d="M8 7c0 2 1.5 3.5 4 4 2.5-.5 4-2 4-4"></path>
-                                                <path d="M7 13c0 2 2 4 5 5 3-.8 5-3 5-5"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-semibold text-slate-900">Crop</p>
-                                            <p class="text-xs text-slate-500">What commodity are we tracking?</p>
-                                        </div>
-                                    </div>
-                                    <input id="cropName" name="cropName" type="text" placeholder="Basmati Rice"
-                                           class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-agri focus:bg-white focus:ring-4 focus:ring-emerald-100">
-                                </label>
-
-                                <label class="rounded-3xl border border-line bg-white/90 p-4 shadow-sm">
-                                    <div class="mb-3 flex items-center gap-3">
-                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-dataBlue">
-                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="12" cy="12" r="9"></circle>
-                                                <path d="M3 12h18"></path>
-                                                <path d="M12 3a14.5 14.5 0 0 1 0 18"></path>
-                                                <path d="M12 3a14.5 14.5 0 0 0 0 18"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-semibold text-slate-900">Region</p>
-                                            <p class="text-xs text-slate-500">Which geography should the engine evaluate?</p>
-                                        </div>
-                                    </div>
-                                    <input id="region" name="region" type="text" placeholder="Punjab"
-                                           class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
-                                </label>
-                            </div>
-
-                            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                                <div class="flex items-center gap-3 text-sm text-slate-500">
-                                    <span id="spinner" class="hidden items-center gap-2 rounded-full bg-slate-100 px-4 py-2 font-medium text-slate-700">
-                                        <span class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-agri"></span>
-                                        Modeling live supply-chain conditions...
-                                    </span>
-                                    <span class="max-w-md">AgriPulse automatically escalates emergency alerts when high-risk patterns are detected.</span>
-                                </div>
-
-                                <button id="analyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-agri px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70">
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 20V10"></path>
-                                        <path d="M18 20V4"></path>
-                                        <path d="M6 20v-4"></path>
-                                    </svg>
-                                    <span id="analyzeButtonLabel">Analyze Supply Chain</span>
-                                </button>
-                            </div>
-                        </form>
-
-                        <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"></div>
-
-                        <section class="mt-7 grid gap-4 xl:grid-cols-3">
-                            <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="wheat">
-                                <button type="button" class="w-full text-left">
-                                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80" alt="Wheat field" class="h-40 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-wheat.svg';">
-                                </button>
-                                <div class="p-4">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Wheat</p>
-                                            <p class="mt-2 text-sm leading-6 text-slate-600">Use for heatwave-sensitive grain routes and yield pressure monitoring.</p>
-                                        </div>
-                                        <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-agri hover:text-agri" data-open-crop="wheat">View</button>
-                                    </div>
-                                    <div class="mt-4 flex items-center justify-between gap-3">
-                                        <span class="text-xs text-slate-400">Recommended region: Punjab</span>
-                                        <button type="button" class="rounded-full bg-agriSoft px-3 py-1.5 text-xs font-semibold text-agri transition hover:bg-emerald-100" data-use-crop="wheat">Use this crop</button>
-                                    </div>
-                                </div>
-                            </article>
-                            <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="rice">
-                                <button type="button" class="w-full text-left">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/960px-Rice_paddy_taken_closely.jpg" alt="Rice paddy" class="h-40 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
-                                </button>
-                                <div class="p-4">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Rice</p>
-                                            <p class="mt-2 text-sm leading-6 text-slate-600">Helpful for export-heavy rice supply chains with monsoon and logistics risk.</p>
-                                        </div>
-                                        <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-dataBlue hover:text-dataBlue" data-open-crop="rice">View</button>
-                                    </div>
-                                    <div class="mt-4 flex items-center justify-between gap-3">
-                                        <span class="text-xs text-slate-400">Recommended region: Punjab</span>
-                                        <button type="button" class="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-semibold text-dataBlue transition hover:bg-sky-100" data-use-crop="rice">Use this crop</button>
-                                    </div>
-                                </div>
-                            </article>
-                            <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="coffee">
-                                <button type="button" class="w-full text-left">
-                                    <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=900&q=80" alt="Coffee plantation" class="h-40 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-coffee.svg';">
-                                </button>
-                                <div class="p-4">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Coffee</p>
-                                            <p class="mt-2 text-sm leading-6 text-slate-600">Useful for quality-sensitive routes where rainfall and storage matter.</p>
-                                        </div>
-                                        <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-amber-700 hover:text-amber-700" data-open-crop="coffee">View</button>
-                                    </div>
-                                    <div class="mt-4 flex items-center justify-between gap-3">
-                                        <span class="text-xs text-slate-400">Recommended region: Karnataka</span>
-                                        <button type="button" class="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100" data-use-crop="coffee">Use this crop</button>
-                                    </div>
-                                </div>
-                            </article>
-                        </section>
                     </div>
                 </div>
             </article>
 
+            <aside class="space-y-5">
+                <section class="rounded-[32px] border border-line bg-white p-6 shadow-panel">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Who Should Use It</p>
+                    <div class="mt-5 space-y-4">
+                        <a href="#enterpriseDesk" class="group flex items-start gap-4 rounded-3xl border border-line bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-agri hover:bg-white">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-agriSoft text-agri">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 21h18"></path>
+                                    <path d="M5 21V7l8-4 6 4v14"></path>
+                                    <path d="M9 9h.01"></path>
+                                    <path d="M9 13h.01"></path>
+                                    <path d="M9 17h.01"></path>
+                                    <path d="M13 9h.01"></path>
+                                    <path d="M13 13h.01"></path>
+                                    <path d="M13 17h.01"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-950 group-hover:text-agri">Enterprise Risk Desk</h3>
+                                <p class="interactive-copy mt-1 text-sm leading-7 text-slate-600">For procurement teams, exporters, processors, and supply chain planners who need disruption narratives, loss estimates, and plan B strategy.</p>
+                            </div>
+                        </a>
+                        <a href="#farmerDesk" class="group flex items-start gap-4 rounded-3xl border border-line bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-dataBlue hover:bg-white">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-skySoft text-dataBlue">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22v-8"></path>
+                                    <path d="M5 10c0 3.9 3.1 7 7 7s7-3.1 7-7"></path>
+                                    <path d="M12 3c-2.6 0-4.7 2.1-4.7 4.7S9.4 12.3 12 12.3s4.7-2.1 4.7-4.6S14.6 3 12 3Z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-950 group-hover:text-dataBlue">Farmer & Producer Desk</h3>
+                                <p class="interactive-copy mt-1 text-sm leading-7 text-slate-600">For producers who want to estimate possible loss, understand the cause of disruption, and review practical protection steps with scheme notes.</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="rounded-[32px] border border-line bg-white p-6 shadow-panel">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">How To Read This Page</p>
+                    <ul class="mt-4 space-y-3 text-sm leading-7 text-slate-600">
+                        <li>Use the <span class="font-semibold text-slate-900">Enterprise Desk</span> if your main concern is procurement, supply continuity, and commercial loss.</li>
+                        <li>Use the <span class="font-semibold text-slate-900">Farmer Desk</span> if your main concern is production loss, disaster response, and resilience planning.</li>
+                        <li>Click highlighted words in the descriptions to enlarge them while you read.</li>
+                    </ul>
+                </section>
+            </aside>
+        </section>
+
+        <section class="mt-8 grid gap-6 xl:grid-cols-3">
+            <article class="overflow-hidden rounded-[30px] border border-line bg-white shadow-panel">
+                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80" alt="Professional grain sourcing landscape" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-wheat.svg';">
+                <div class="p-6">
+                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Enterprise Use Case</p>
+                    <h3 class="mt-3 text-2xl font-bold text-slate-950">Procurement teams can estimate disruption and rupee loss quickly.</h3>
+                    <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">Add purchase quantity, current crop rate, and planning horizon so the report can estimate how a regional problem may affect commercial exposure.</p>
+                </div>
+            </article>
+            <article class="overflow-hidden rounded-[30px] border border-line bg-white shadow-panel">
+                <img src="https://images.unsplash.com/photo-1536051465113-5a56f689dc00?auto=format&fit=crop&w=1200&q=80" alt="Modern rice cultivation" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
+                <div class="p-6">
+                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Problem Visibility</p>
+                    <h3 class="mt-3 text-2xl font-bold text-slate-950">Reports explain the actual disruption, not just the risk label.</h3>
+                    <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">Every serious report should explain whether the area faces disease pressure, heat stress, flood risk, freight bottlenecks, policy shocks, or storage issues.</p>
+                </div>
+            </article>
+            <article class="overflow-hidden rounded-[30px] border border-line bg-white shadow-panel">
+                <img src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1200&q=80" alt="Professional agricultural producer" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-coffee.svg';">
+                <div class="p-6">
+                    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-warning">Farmer Use Case</p>
+                    <h3 class="mt-3 text-2xl font-bold text-slate-950">Farmers and producers can plan loss reduction and resilience.</h3>
+                    <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">The farmer report focuses on production risk, approximate income impact, practical actions, and helpful scheme directions instead of only corporate strategy.</p>
+                </div>
+            </article>
+        </section>
+
+        <section id="enterpriseDesk" class="mt-10 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+            <article class="rounded-[32px] border border-emerald-100 bg-white p-7 shadow-soft">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div class="max-w-2xl">
+                        <p class="text-sm font-semibold uppercase tracking-[0.28em] text-agri">Enterprise Risk Desk</p>
+                        <h3 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">For buyers, exporters, processors, and planners</h3>
+                        <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">This workflow estimates disruption severity, expected price pressure, potential rupee loss, and the plan B actions a supply chain team should take.</p>
+                    </div>
+                    <div class="rounded-3xl border border-emerald-200 bg-agriSoft px-4 py-3 text-sm font-medium text-agri">
+                        Suggested crops: Turmeric, Basmati Rice, Wheat, Coffee
+                    </div>
+                </div>
+
+                <form id="enterpriseForm" class="mt-7 grid gap-5">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                            <p class="mb-2 text-sm font-semibold text-slate-900">Crop</p>
+                            <input id="enterpriseCropName" type="text" placeholder="Basmati Rice" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-agri focus:bg-white focus:ring-4 focus:ring-emerald-100">
+                        </label>
+                        <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                            <p class="mb-2 text-sm font-semibold text-slate-900">Region</p>
+                            <input id="enterpriseRegion" type="text" placeholder="Punjab" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
+                        </label>
+                    </div>
+
+                    <div class="grid gap-4 md:grid-cols-3">
+                        <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                            <p class="mb-2 text-sm font-semibold text-slate-900">Monthly purchase quantity</p>
+                            <input id="enterpriseQuantityTonnes" type="number" min="0" step="0.1" placeholder="120" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-agri focus:bg-white focus:ring-4 focus:ring-emerald-100">
+                            <p class="mt-2 text-xs text-slate-500">Tonnes purchased from this region.</p>
+                        </label>
+                        <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                            <p class="mb-2 text-sm font-semibold text-slate-900">Current crop rate</p>
+                            <input id="enterpriseCropRatePerKgInr" type="number" min="0" step="0.1" placeholder="72" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-agri focus:bg-white focus:ring-4 focus:ring-emerald-100">
+                            <p class="mt-2 text-xs text-slate-500">INR per kg.</p>
+                        </label>
+                        <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                            <p class="mb-2 text-sm font-semibold text-slate-900">Planning horizon</p>
+                            <input id="enterprisePlanningHorizonDays" type="number" min="1" step="1" placeholder="30" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-agri focus:bg-white focus:ring-4 focus:ring-emerald-100">
+                            <p class="mt-2 text-xs text-slate-500">Days of exposure to assess.</p>
+                        </label>
+                    </div>
+
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <p class="interactive-copy max-w-xl text-sm leading-7 text-slate-500">Use this desk when you want a commercial answer: what is going wrong, how severe it is, how much it may cost, and what enterprise action plan should start now.</p>
+                        <button id="enterpriseAnalyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-agri px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:-translate-y-0.5 hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20V10"></path>
+                                <path d="M18 20V4"></path>
+                                <path d="M6 20v-4"></path>
+                            </svg>
+                            <span id="enterpriseAnalyzeButtonLabel">Analyze Enterprise Risk</span>
+                        </button>
+                    </div>
+                </form>
+            </article>
+
             <aside class="space-y-6">
-                <section class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
+                <section class="rounded-[32px] border border-line bg-white p-6 shadow-panel">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">Live Weather</p>
                             <h3 class="mt-2 text-2xl font-bold text-slate-950">Region climate pulse</h3>
-                            <p class="mt-2 text-sm leading-6 text-slate-500">Auto-refreshes when you update the selected region.</p>
+                            <p class="interactive-copy mt-2 text-sm leading-7 text-slate-500">This snapshot helps a visitor understand what is happening in the region before they even open the PDF report.</p>
                         </div>
-                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-dataBlue">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-skySoft text-dataBlue">
                             <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M6 16a4 4 0 1 1 .9-7.9A5 5 0 0 1 16.8 10H17a3 3 0 1 1 0 6Z"></path>
                                 <path d="M8 19l.01 0"></path>
@@ -237,7 +265,6 @@
                             </svg>
                         </div>
                     </div>
-
                     <div class="mt-5 grid gap-4 sm:grid-cols-2">
                         <div class="rounded-2xl border border-line bg-slate-50 p-4">
                             <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Region</p>
@@ -252,56 +279,245 @@
                     </div>
                 </section>
 
-                <section id="resultCard" class="hidden rounded-[28px] border border-emerald-100 bg-white p-6 shadow-panel">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Latest Intelligence Brief</p>
-                            <h3 id="resultTitle" class="mt-2 text-2xl font-bold text-slate-950"></h3>
-                            <p id="resultSubtitle" class="mt-2 max-w-xl text-sm leading-6 text-slate-500">Operational decision support for the latest selected route.</p>
-                        </div>
-                        <span id="riskBadge" class="rounded-full px-4 py-2 text-sm font-semibold"></span>
-                    </div>
-
-                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                <section class="rounded-[32px] border border-line bg-white p-6 shadow-panel">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Current Report Focus</p>
+                    <div class="mt-4 grid gap-4 sm:grid-cols-2">
                         <div class="rounded-2xl border border-line bg-agriSoft p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Plan B Strategy</p>
-                            <p id="mitigationStrategy" class="mt-2 text-sm leading-7 text-slate-700"></p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-agri">Stakeholder</p>
+                            <p id="currentStakeholder" class="mt-2 text-xl font-bold text-slate-950">Enterprise</p>
                         </div>
-                        <div class="rounded-2xl border border-line bg-sky-50 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Executive Note</p>
-                            <p id="executiveSignal" class="mt-2 text-sm leading-7 text-slate-700"></p>
+                        <div class="rounded-2xl border border-line bg-skySoft p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-dataBlue">Estimated Rupee Loss</p>
+                            <p id="currentLossInr" class="mt-2 text-xl font-bold text-slate-950">Not calculated yet</p>
                         </div>
                     </div>
                 </section>
             </aside>
         </section>
 
-        <section id="pulse" class="mt-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <section id="farmerDesk" class="mt-10 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+            <article class="overflow-hidden rounded-[32px] border border-sky-100 bg-white shadow-soft">
+                <img src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1600&q=80" alt="Professional producer in agricultural operations" class="h-64 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-coffee.svg';">
+                <div class="p-7">
+                    <p class="text-sm font-semibold uppercase tracking-[0.28em] text-dataBlue">Farmer & Producer Desk</p>
+                    <h3 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">For growers who want loss protection, not just a market warning</h3>
+                    <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">This section helps a producer estimate likely income impact, identify the real threat, review practical actions, and collect a farmer-oriented PDF with scheme guidance.</p>
+
+                    <form id="farmerForm" class="mt-6 grid gap-5">
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                                <p class="mb-2 text-sm font-semibold text-slate-900">Crop</p>
+                                <input id="farmerCropName" type="text" placeholder="Turmeric" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
+                            </label>
+                            <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                                <p class="mb-2 text-sm font-semibold text-slate-900">Region</p>
+                                <input id="farmerRegion" type="text" placeholder="Erode" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
+                            </label>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-3">
+                            <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                                <p class="mb-2 text-sm font-semibold text-slate-900">Expected harvest quantity</p>
+                                <input id="farmerQuantityTonnes" type="number" min="0" step="0.1" placeholder="18" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <p class="mt-2 text-xs text-slate-500">Tonnes expected to sell.</p>
+                            </label>
+                            <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                                <p class="mb-2 text-sm font-semibold text-slate-900">Current selling rate</p>
+                                <input id="farmerCropRatePerKgInr" type="number" min="0" step="0.1" placeholder="68" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <p class="mt-2 text-xs text-slate-500">INR per kg.</p>
+                            </label>
+                            <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
+                                <p class="mb-2 text-sm font-semibold text-slate-900">Farm area</p>
+                                <input id="farmerFarmAreaAcres" type="number" min="0" step="0.1" placeholder="12" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <p class="mt-2 text-xs text-slate-500">Acres under this crop.</p>
+                            </label>
+                        </div>
+                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <p class="interactive-copy max-w-xl text-sm leading-7 text-slate-500">Use this desk when you need a producer view: what disaster may happen, how much income may be at risk, what action should start now, and which schemes may help.</p>
+                            <button id="farmerAnalyzeButton" type="submit" class="inline-flex items-center justify-center gap-3 rounded-full bg-dataBlue px-6 py-3.5 text-base font-semibold text-white shadow-panel transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 20h16"></path>
+                                    <path d="M7 16c0-2 1.5-3.5 3.5-3.5H13"></path>
+                                    <path d="M12 3v17"></path>
+                                </svg>
+                                <span id="farmerAnalyzeButtonLabel">Analyze Farmer Risk</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </article>
+
+            <section id="resultCard" class="rounded-[32px] border border-emerald-100 bg-white p-6 shadow-panel">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div class="max-w-3xl">
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Latest Intelligence Brief</p>
+                        <h3 id="resultTitle" class="mt-2 text-3xl font-bold text-slate-950">Run an analysis to generate a detailed brief</h3>
+                        <p id="resultSubtitle" class="mt-2 text-sm leading-7 text-slate-500">The result panel explains what is happening in the region, how serious it is, and what to do next.</p>
+                    </div>
+                    <span id="riskBadge" class="inline-flex rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">No result yet</span>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-2">
+                    <div class="rounded-3xl border border-line bg-slate-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Disruption Summary</p>
+                        <p id="disruptionSummary" class="mt-3 text-sm leading-7 text-slate-700">Detailed supply chain and production disruption notes will appear here after an analysis.</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-slate-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Primary Threat</p>
+                        <p id="primaryThreat" class="mt-3 text-lg font-bold text-slate-950">No threat identified yet</p>
+                        <p id="detailedProblem" class="mt-3 text-sm leading-7 text-slate-700">This section will explain the actual problem affecting the region such as crop disease, heat stress, extreme rainfall, or logistics disruption.</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-3">
+                    <div class="rounded-3xl border border-line bg-agriSoft p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Estimated Supply Impact</p>
+                        <p id="supplyImpactValue" class="mt-3 text-3xl font-extrabold text-slate-950">--</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-skySoft p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Expected Price Pressure</p>
+                        <p id="priceImpactValue" class="mt-3 text-3xl font-extrabold text-slate-950">--</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-amber-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-warning">Estimated Rupee Loss</p>
+                        <p id="resultLossInr" class="mt-3 text-3xl font-extrabold text-slate-950">--</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-2">
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Plan B Strategy</p>
+                        <p id="mitigationStrategy" class="mt-3 text-sm leading-7 text-slate-700">The mitigation plan will be filled after an analysis.</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Executive Narrative</p>
+                        <p id="executiveSignal" class="mt-3 text-sm leading-7 text-slate-700">This short narrative will help a visitor understand whether the threat is severe, moderate, or manageable.</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-3">
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Risk Factors</p>
+                        <ul id="riskFactorsList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>No analysis yet.</li>
+                        </ul>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Enterprise Actions</p>
+                        <ul id="enterpriseActionsList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>Analyze a region to populate this list.</li>
+                        </ul>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Farmer Actions & Schemes</p>
+                        <ul id="farmerActionsList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>Analyze a region to populate this list.</li>
+                        </ul>
+                        <div class="mt-4 rounded-2xl border border-line bg-slate-50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Scheme Notes</p>
+                            <ul id="governmentSchemesList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                                <li>No scheme note yet.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <button id="enterprisePdfButton" type="button" class="rounded-full bg-agri px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">Generate Enterprise PDF</button>
+                    <button id="farmerPdfButton" type="button" class="rounded-full bg-dataBlue px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700">Generate Farmer PDF</button>
+                </div>
+
+                <div id="errorBanner" class="mt-5 hidden rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"></div>
+            </section>
+        </section>
+
+        <section class="mt-10 rounded-[32px] border border-line bg-white p-7 shadow-panel">
+            <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div class="max-w-2xl">
+                    <p class="text-sm font-semibold uppercase tracking-[0.28em] text-agri">Crop Scenarios</p>
+                    <h3 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">Quick-fill crop profiles</h3>
+                    <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">These cards help a new visitor understand example use cases. Click a photo to inspect the crop profile or push it into the enterprise or farmer form.</p>
+                </div>
+            </div>
+
+            <div class="mt-7 grid gap-4 xl:grid-cols-3">
+                <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="wheat">
+                    <button type="button" class="w-full text-left">
+                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80" alt="Wheat field" class="h-44 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-wheat.svg';">
+                    </button>
+                    <div class="p-5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Wheat</p>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">Best for heat stress, storage pressure, and staple-grain procurement examples.</p>
+                            </div>
+                            <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-agri hover:text-agri" data-open-crop="wheat">View</button>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button type="button" class="rounded-full bg-agriSoft px-3 py-1.5 text-xs font-semibold text-agri transition hover:bg-emerald-100" data-use-crop="wheat" data-target-form="enterprise">Use in Enterprise Desk</button>
+                            <button type="button" class="rounded-full bg-skySoft px-3 py-1.5 text-xs font-semibold text-dataBlue transition hover:bg-sky-100" data-use-crop="wheat" data-target-form="farmer">Use in Farmer Desk</button>
+                        </div>
+                    </div>
+                </article>
+                <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="rice">
+                    <button type="button" class="w-full text-left">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/960px-Rice_paddy_taken_closely.jpg" alt="Rice paddy" class="h-44 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
+                    </button>
+                    <div class="p-5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Rice</p>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">Best for export logistics, rainfall sensitivity, and price volatility demonstrations.</p>
+                            </div>
+                            <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-dataBlue hover:text-dataBlue" data-open-crop="rice">View</button>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button type="button" class="rounded-full bg-agriSoft px-3 py-1.5 text-xs font-semibold text-agri transition hover:bg-emerald-100" data-use-crop="rice" data-target-form="enterprise">Use in Enterprise Desk</button>
+                            <button type="button" class="rounded-full bg-skySoft px-3 py-1.5 text-xs font-semibold text-dataBlue transition hover:bg-sky-100" data-use-crop="rice" data-target-form="farmer">Use in Farmer Desk</button>
+                        </div>
+                    </div>
+                </article>
+                <article class="crop-card overflow-hidden rounded-[28px] border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-panel" data-crop-key="coffee">
+                    <button type="button" class="w-full text-left">
+                        <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=900&q=80" alt="Coffee plantation" class="h-44 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-coffee.svg';">
+                    </button>
+                    <div class="p-5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-warning">Coffee</p>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">Best for premium-crop quality risk, rainfall disruption, and producer resilience stories.</p>
+                            </div>
+                            <button type="button" class="rounded-full border border-line px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-warning hover:text-warning" data-open-crop="coffee">View</button>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button type="button" class="rounded-full bg-agriSoft px-3 py-1.5 text-xs font-semibold text-agri transition hover:bg-emerald-100" data-use-crop="coffee" data-target-form="enterprise">Use in Enterprise Desk</button>
+                            <button type="button" class="rounded-full bg-skySoft px-3 py-1.5 text-xs font-semibold text-dataBlue transition hover:bg-sky-100" data-use-crop="coffee" data-target-form="farmer">Use in Farmer Desk</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="pulse" class="mt-10 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
             <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
                 <div class="mb-5 flex items-center justify-between gap-4">
                     <div>
                         <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">The Pulse</p>
-                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Price Trends</h3>
-                        <p class="mt-1 text-sm text-slate-500">A clean index of estimated price pressure derived from recent disruption severity.</p>
+                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Price Trend View</h3>
+                        <p class="interactive-copy mt-1 text-sm text-slate-500">This chart gives a visitor a quick sense of how risk has been translating into price pressure across recent reports.</p>
                     </div>
-                    <div class="rounded-2xl border border-line bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                        Updated from the most recent historical logs
-                    </div>
+                    <div class="rounded-2xl border border-line bg-slate-50 px-4 py-3 text-sm text-slate-600">Updated from recent risk history</div>
                 </div>
                 <div class="relative h-72 rounded-3xl border border-line bg-slate-50/70 p-3">
                     <canvas id="priceTrendChart"></canvas>
-                    <div id="priceTrendFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500">
-                        Chart data is temporarily unavailable. Historical price pressure will render here as soon as analytics loads.
-                    </div>
+                    <div id="priceTrendFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500"></div>
                 </div>
             </article>
-
             <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
                 <div class="mb-5 flex items-center justify-between gap-4">
                     <div>
                         <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Risk Composition</p>
-                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Risk Factor Breakdown</h3>
-                        <p class="mt-1 text-sm text-slate-500">Signals estimated from the language inside recent plan B strategies.</p>
+                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Disruption Breakdown</h3>
+                        <p class="interactive-copy mt-1 text-sm text-slate-500">This shows whether recent reports are leaning more toward weather, logistics, market, or storage disruption.</p>
                     </div>
                     <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-agriSoft text-agri">
                         <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -312,9 +528,7 @@
                 </div>
                 <div class="relative h-72 rounded-3xl border border-line bg-slate-50/70 p-3">
                     <canvas id="riskBreakdownChart"></canvas>
-                    <div id="riskBreakdownFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500">
-                        Risk factor breakdown will appear here after the chart library finishes loading.
-                    </div>
+                    <div id="riskBreakdownFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500"></div>
                 </div>
             </article>
         </section>
@@ -325,27 +539,23 @@
                     <div>
                         <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">Geo Signal</p>
                         <h3 class="mt-2 text-2xl font-bold text-slate-950">Global Risk Map</h3>
-                        <p class="mt-1 text-sm text-slate-500">High-risk concentration by region from the latest reports in the database.</p>
+                        <p class="interactive-copy mt-1 text-sm text-slate-500">This compares regions by total reports and high-risk reports so a new visitor can see where disruption is concentrating.</p>
                     </div>
-                    <div class="rounded-2xl border border-line bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                        Regions update after every new analysis
-                    </div>
+                    <div class="rounded-2xl border border-line bg-slate-50 px-4 py-3 text-sm text-slate-600">Updated after every analysis</div>
                 </div>
                 <div class="relative h-72 rounded-3xl border border-line bg-slate-50/70 p-3">
                     <canvas id="riskMapChart"></canvas>
-                    <div id="riskMapFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500">
-                        Region-by-region risk coverage will render here after analytics initializes.
-                    </div>
+                    <div id="riskMapFallback" class="hidden absolute inset-3 rounded-[20px] border border-dashed border-slate-200 bg-white/80 px-6 py-8 text-sm leading-6 text-slate-500"></div>
                 </div>
             </article>
 
             <article class="rounded-[28px] border border-line bg-white p-6 shadow-panel">
                 <div class="mb-5 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Operational Summary</p>
-                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Command Metrics</h3>
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Command Metrics</p>
+                        <h3 class="mt-2 text-2xl font-bold text-slate-950">Live dashboard summary</h3>
                     </div>
-                    <div class="text-sm text-slate-500">Live from current dashboard data</div>
+                    <div class="text-sm text-slate-500">Computed from current data</div>
                 </div>
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div class="rounded-3xl border border-line bg-slate-50 p-5">
@@ -363,10 +573,8 @@
                 </div>
 
                 <div class="mt-5 rounded-3xl border border-line bg-gradient-to-r from-slate-50 via-white to-emerald-50 p-5">
-                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Field Guidance</p>
-                    <p class="mt-3 text-sm leading-7 text-slate-600">
-                        This workspace is optimized for fast executive scanability: weather pulse, risk composition, disruption logs, and printable summaries live in one light-themed operational surface.
-                    </p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Why This Matters</p>
+                    <p class="interactive-copy mt-3 text-sm leading-7 text-slate-600">A new visitor should be able to understand AgriPulse in one glance: identify the disruption, estimate the loss, choose actions, and export a report that is actually useful for decision-making.</p>
                 </div>
             </article>
         </section>
@@ -376,7 +584,7 @@
                 <div>
                     <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">Historical Disruption Logs</p>
                     <h3 class="mt-2 text-2xl font-bold text-slate-950">Sortable operational memory</h3>
-                    <p class="mt-1 text-sm text-slate-500">Sort by crop, region, risk, or plan B strategy to scan prior disruption patterns.</p>
+                    <p class="interactive-copy mt-1 text-sm text-slate-500">Use the history table to compare crops, regions, and plan B patterns from past analyses.</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <button id="prevPage" class="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-dataBlue hover:text-dataBlue disabled:opacity-40">Previous</button>
@@ -389,30 +597,10 @@
                     <table class="min-w-full text-left">
                         <thead class="bg-slate-50 text-xs uppercase tracking-[0.22em] text-slate-500">
                         <tr>
-                            <th class="px-5 py-4">
-                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="cropName">
-                                    Crop
-                                    <span class="text-slate-300">+</span>
-                                </button>
-                            </th>
-                            <th class="px-5 py-4">
-                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="region">
-                                    Region
-                                    <span class="text-slate-300">+</span>
-                                </button>
-                            </th>
-                            <th class="px-5 py-4">
-                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="riskLevel">
-                                    Risk
-                                    <span class="text-slate-300">+</span>
-                                </button>
-                            </th>
-                            <th class="px-5 py-4">
-                                <button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="mitigationStrategy">
-                                    Plan B Strategy
-                                    <span class="text-slate-300">+</span>
-                                </button>
-                            </th>
+                            <th class="px-5 py-4"><button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="cropName">Crop <span class="text-slate-300">+</span></button></th>
+                            <th class="px-5 py-4"><button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="region">Region <span class="text-slate-300">+</span></button></th>
+                            <th class="px-5 py-4"><button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="riskLevel">Risk <span class="text-slate-300">+</span></button></th>
+                            <th class="px-5 py-4"><button type="button" class="sort-button flex items-center gap-2 font-semibold" data-sort-key="mitigationStrategy">Plan B Strategy <span class="text-slate-300">+</span></button></th>
                         </tr>
                         </thead>
                         <tbody id="historyTableBody" class="divide-y divide-line bg-white text-sm text-slate-700">
@@ -429,7 +617,7 @@
 
             <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <p id="pageLabel" class="text-sm text-slate-500">Page 1</p>
-                <p class="text-sm text-slate-400">Tip: sort the table to compare regions with similar mitigation patterns.</p>
+                <p class="text-sm text-slate-400">Tip: sort the table to compare crops and mitigation patterns side by side.</p>
             </div>
         </section>
     </main>
@@ -464,11 +652,11 @@
                 </div>
 
                 <div class="mt-6 flex flex-wrap gap-3">
-                    <button id="applyCropPreset" type="button" class="rounded-full bg-agri px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">
-                        Use This Scenario
+                    <button id="applyCropPresetEnterprise" type="button" class="rounded-full bg-agri px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">
+                        Use in Enterprise Desk
                     </button>
-                    <button id="focusRegionInput" type="button" class="rounded-full border border-line px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-dataBlue hover:text-dataBlue">
-                        Edit Region
+                    <button id="applyCropPresetFarmer" type="button" class="rounded-full bg-dataBlue px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700">
+                        Use in Farmer Desk
                     </button>
                 </div>
             </div>
@@ -485,26 +673,40 @@
     let totalPages = 1;
     let currentHistoryItems = [...initialRecentReports];
     let currentSort = { key: 'riskLevel', direction: 'desc' };
-    let latestRiskResult = null;
+    let latestReportContext = null;
+    let activeCropPresetKey = null;
+    let priceTrendChart = null;
+    let riskBreakdownChart = null;
+    let riskMapChart = null;
 
-    const form = document.getElementById('riskForm');
-    const analyzeButton = document.getElementById('analyzeButton');
-    const analyzeButtonLabel = document.getElementById('analyzeButtonLabel');
-    const spinner = document.getElementById('spinner');
+    const enterpriseForm = document.getElementById('enterpriseForm');
+    const farmerForm = document.getElementById('farmerForm');
+    const enterpriseAnalyzeButton = document.getElementById('enterpriseAnalyzeButton');
+    const enterpriseAnalyzeButtonLabel = document.getElementById('enterpriseAnalyzeButtonLabel');
+    const farmerAnalyzeButton = document.getElementById('farmerAnalyzeButton');
+    const farmerAnalyzeButtonLabel = document.getElementById('farmerAnalyzeButtonLabel');
+    const pdfButton = document.getElementById('pdfButton');
+    const enterprisePdfButton = document.getElementById('enterprisePdfButton');
+    const farmerPdfButton = document.getElementById('farmerPdfButton');
+
     const errorBanner = document.getElementById('errorBanner');
-    const resultCard = document.getElementById('resultCard');
     const resultTitle = document.getElementById('resultTitle');
     const resultSubtitle = document.getElementById('resultSubtitle');
     const riskBadge = document.getElementById('riskBadge');
+    const disruptionSummary = document.getElementById('disruptionSummary');
+    const primaryThreat = document.getElementById('primaryThreat');
+    const detailedProblem = document.getElementById('detailedProblem');
     const mitigationStrategy = document.getElementById('mitigationStrategy');
     const executiveSignal = document.getElementById('executiveSignal');
-    const cropNameInput = document.getElementById('cropName');
-    const regionInput = document.getElementById('region');
-    const historyTableBody = document.getElementById('historyTableBody');
-    const pageLabel = document.getElementById('pageLabel');
-    const prevPageButton = document.getElementById('prevPage');
-    const nextPageButton = document.getElementById('nextPage');
-    const pdfButton = document.getElementById('pdfButton');
+    const supplyImpactValue = document.getElementById('supplyImpactValue');
+    const priceImpactValue = document.getElementById('priceImpactValue');
+    const resultLossInr = document.getElementById('resultLossInr');
+    const currentLossInr = document.getElementById('currentLossInr');
+    const currentStakeholder = document.getElementById('currentStakeholder');
+    const riskFactorsList = document.getElementById('riskFactorsList');
+    const enterpriseActionsList = document.getElementById('enterpriseActionsList');
+    const farmerActionsList = document.getElementById('farmerActionsList');
+    const governmentSchemesList = document.getElementById('governmentSchemesList');
 
     const weatherRegion = document.getElementById('weatherRegion');
     const weatherSummary = document.getElementById('weatherSummary');
@@ -514,6 +716,12 @@
     const trackedRegionsMetric = document.getElementById('trackedRegionsMetric');
     const highRiskMetric = document.getElementById('highRiskMetric');
     const priceIndexMetric = document.getElementById('priceIndexMetric');
+
+    const historyTableBody = document.getElementById('historyTableBody');
+    const pageLabel = document.getElementById('pageLabel');
+    const prevPageButton = document.getElementById('prevPage');
+    const nextPageButton = document.getElementById('nextPage');
+
     const cropModal = document.getElementById('cropModal');
     const closeCropModal = document.getElementById('closeCropModal');
     const cropModalImage = document.getElementById('cropModalImage');
@@ -523,80 +731,122 @@
     const cropModalRegion = document.getElementById('cropModalRegion');
     const cropModalRisk = document.getElementById('cropModalRisk');
     const cropModalScenario = document.getElementById('cropModalScenario');
-    const applyCropPresetButton = document.getElementById('applyCropPreset');
-    const focusRegionInputButton = document.getElementById('focusRegionInput');
+    const applyCropPresetEnterprise = document.getElementById('applyCropPresetEnterprise');
+    const applyCropPresetFarmer = document.getElementById('applyCropPresetFarmer');
 
     const riskLevelPriority = { High: 3, Medium: 2, Low: 1 };
+    const inrFormatter = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+    });
+
     const cropLibrary = {
         wheat: {
-            label: 'Crop Intelligence',
-            title: 'Wheat Supply Chain',
             cropName: 'Wheat',
-            region: 'Punjab',
-            riskLens: 'Heat stress and price volatility',
-            scenario: 'Run a wheat assessment in Punjab to model yield pressure, storage buffering, and alternate sourcing routes.',
-            summary: 'Wheat routes are especially sensitive to weather swings, transport bottlenecks, and fast-moving commodity pricing. This is a strong demo crop when you want a classic staple-food risk story.',
-            image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=85',
-            fallbackImage: '/images/crop-wheat.svg'
+            enterpriseRegion: 'Punjab',
+            farmerRegion: 'Punjab',
+            label: 'Crop Profile',
+            title: 'Wheat Supply Chain',
+            riskLens: 'Heat stress, storage loss, and staple pricing',
+            summary: 'Wheat is a strong demonstration crop for enterprise buyers and producers because weather, yield quality, storage, and commodity pricing move together quickly.',
+            scenario: 'Use wheat in Punjab when you want to study heat wave pressure, grain storage strain, and staple-food procurement exposure.',
+            pageImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+            fallbackImage: '/images/crop-wheat.svg',
+            defaultEnterpriseQuantity: 120,
+            defaultEnterpriseRate: 31,
+            defaultPlanningHorizonDays: 30,
+            defaultFarmerQuantity: 18,
+            defaultFarmerRate: 29,
+            defaultFarmAreaAcres: 12
         },
         rice: {
-            label: 'Crop Intelligence',
-            title: 'Rice Export Corridor',
             cropName: 'Basmati Rice',
-            region: 'Punjab',
-            riskLens: 'Monsoon, procurement, and export logistics',
-            scenario: 'Run a basmati rice assessment in Punjab to surface weather exposure, export timing risk, and backup procurement options.',
-            summary: 'Rice is a great portfolio crop for AgriPulse because it mixes climate sensitivity with export, logistics, and market-price uncertainty in a single story.',
-            image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg',
-            fallbackImage: '/images/crop-rice.svg'
+            enterpriseRegion: 'Punjab',
+            farmerRegion: 'Punjab',
+            label: 'Crop Profile',
+            title: 'Rice Export Corridor',
+            riskLens: 'Monsoon variation, export delay, and price volatility',
+            summary: 'Rice is ideal for showing how climate sensitivity and export logistics can combine into a larger supply chain problem for both processors and producers.',
+            scenario: 'Use basmati rice in Punjab when you want to explain weather exposure, procurement disruption, market reaction, and farmer selling risk in one case.',
+            pageImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg',
+            fallbackImage: '/images/crop-rice.svg',
+            defaultEnterpriseQuantity: 140,
+            defaultEnterpriseRate: 72,
+            defaultPlanningHorizonDays: 45,
+            defaultFarmerQuantity: 22,
+            defaultFarmerRate: 68,
+            defaultFarmAreaAcres: 16
         },
         coffee: {
-            label: 'Crop Intelligence',
-            title: 'Coffee Plantation Network',
             cropName: 'Coffee',
-            region: 'Karnataka',
-            riskLens: 'Rainfall, storage quality, and supplier continuity',
-            scenario: 'Run a coffee assessment in Karnataka to model rainfall disruption, bean quality risk, and alternate warehouse planning.',
-            summary: 'Coffee makes the dashboard feel more global and premium because it introduces plantation-level climate risk and storage-quality concerns, not just commodity pricing.',
-            image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1400&q=85',
-            fallbackImage: '/images/crop-coffee.svg'
-        }
-    };
-    let activeCropPresetKey = null;
-
-    const chartDefaults = {
-        plugins: {
-            legend: {
-                labels: {
-                    color: '#475569',
-                    font: {
-                        family: 'Inter'
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: {
-                    color: '#64748B',
-                    font: { family: 'Inter' }
-                },
-                grid: { color: '#EEF2F7' }
-            },
-            y: {
-                ticks: {
-                    color: '#64748B',
-                    font: { family: 'Inter' },
-                    precision: 0
-                },
-                grid: { color: '#EEF2F7' }
-            }
+            enterpriseRegion: 'Karnataka',
+            farmerRegion: 'Karnataka',
+            label: 'Crop Profile',
+            title: 'Coffee Plantation Network',
+            riskLens: 'Rainfall shifts, quality loss, and storage pressure',
+            summary: 'Coffee helps AgriPulse feel more premium and global because quality, rainfall, storage, and producer resilience all matter together.',
+            scenario: 'Use coffee in Karnataka when you want to model plantation disruption, bean quality stress, and producer-focused resilience action.',
+            pageImage: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1200&q=80',
+            fallbackImage: '/images/crop-coffee.svg',
+            defaultEnterpriseQuantity: 40,
+            defaultEnterpriseRate: 310,
+            defaultPlanningHorizonDays: 21,
+            defaultFarmerQuantity: 9,
+            defaultFarmerRate: 295,
+            defaultFarmAreaAcres: 8
         }
     };
 
-    let priceTrendChart = null;
-    let riskBreakdownChart = null;
-    let riskMapChart = null;
+    function decorateInteractiveCopy() {
+        document.querySelectorAll('.interactive-copy').forEach(block => {
+            if (block.dataset.decorated === 'true') {
+                return;
+            }
+
+            const words = block.textContent.trim().split(/\s+/);
+            block.innerHTML = words.map(word => `<button type="button" class="inline mx-[1px] rounded-md px-1 py-0.5 text-left transition duration-200 hover:bg-emerald-50 hover:text-agri focus:outline-none">${word}</button>`).join(' ');
+            block.dataset.decorated = 'true';
+        });
+
+        document.querySelectorAll('.interactive-copy button').forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.toggle('scale-125');
+                button.classList.toggle('font-semibold');
+                button.classList.toggle('text-agri');
+            });
+        });
+    }
+
+    function showError(message) {
+        errorBanner.textContent = message;
+        errorBanner.classList.remove('hidden');
+    }
+
+    function hideError() {
+        errorBanner.classList.add('hidden');
+        errorBanner.textContent = '';
+    }
+
+    function badgeClassesForRisk(riskLevel) {
+        if (riskLevel === 'High') {
+            return 'bg-rose-50 text-rose-700 border border-rose-200';
+        }
+        if (riskLevel === 'Medium') {
+            return 'bg-amber-50 text-amber-700 border border-amber-200';
+        }
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    }
+
+    function riskNarrative(riskLevel, primaryThreatValue) {
+        if (riskLevel === 'High') {
+            return `High disruption probability detected. The leading issue is ${primaryThreatValue || 'a severe regional threat'}, so mitigation should start immediately with contingency actions and financial protection.`;
+        }
+        if (riskLevel === 'Medium') {
+            return `Moderate disruption probability detected. The main pressure is ${primaryThreatValue || 'a rising operational threat'}, so teams should prepare buffers before the situation gets worse.`;
+        }
+        return `Current disruption pressure is relatively manageable. The main concern remains ${primaryThreatValue || 'general market or climate variability'}, so monitoring and light safeguards are appropriate.`;
+    }
 
     function showChartFallback(id, message) {
         const fallback = document.getElementById(id);
@@ -616,6 +866,27 @@
             return;
         }
 
+        const chartDefaults = {
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#475569',
+                        font: { family: 'Inter' }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#64748B', font: { family: 'Inter' } },
+                    grid: { color: '#EEF2F7' }
+                },
+                y: {
+                    ticks: { color: '#64748B', font: { family: 'Inter' }, precision: 0 },
+                    grid: { color: '#EEF2F7' }
+                }
+            }
+        };
+
         priceTrendChart = new Chart(document.getElementById('priceTrendChart'), {
             type: 'line',
             data: {
@@ -631,29 +902,21 @@
                     pointHoverRadius: 5
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                ...chartDefaults
-            }
+            options: { responsive: true, maintainAspectRatio: false, ...chartDefaults }
         });
 
         riskBreakdownChart = new Chart(document.getElementById('riskBreakdownChart'), {
             type: 'bar',
             data: {
-                labels: ['Weather', 'Logistics', 'Market', 'Storage'],
+                labels: ['Weather', 'Disease', 'Logistics', 'Market', 'Storage'],
                 datasets: [{
                     label: 'Signal Strength',
-                    data: [0, 0, 0, 0],
-                    backgroundColor: ['#166534', '#0369A1', '#0EA5E9', '#86EFAC'],
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: ['#166534', '#DC2626', '#0369A1', '#0EA5E9', '#86EFAC'],
                     borderRadius: 14
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                ...chartDefaults
-            }
+            options: { responsive: true, maintainAspectRatio: false, ...chartDefaults }
         });
 
         riskMapChart = new Chart(document.getElementById('riskMapChart'), {
@@ -661,99 +924,31 @@
             data: {
                 labels: [],
                 datasets: [
-                    {
-                        label: 'High Risk Reports',
-                        data: [],
-                        backgroundColor: '#166534',
-                        borderRadius: 14
-                    },
-                    {
-                        label: 'Total Reports',
-                        data: [],
-                        backgroundColor: 'rgba(3, 105, 161, 0.2)',
-                        borderRadius: 14
-                    }
+                    { label: 'High Risk Reports', data: [], backgroundColor: '#166534', borderRadius: 14 },
+                    { label: 'Total Reports', data: [], backgroundColor: 'rgba(3, 105, 161, 0.2)', borderRadius: 14 }
                 ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                ...chartDefaults
-            }
+            options: { responsive: true, maintainAspectRatio: false, ...chartDefaults }
         });
     }
 
-    function badgeClassesForRisk(riskLevel) {
-        if (riskLevel === 'High') {
-            return 'bg-rose-50 text-rose-700 border border-rose-200';
+    function normalizeCropKeyFromName(cropName) {
+        const normalized = (cropName || '').toLowerCase();
+        if (normalized.includes('rice')) {
+            return 'rice';
         }
-        if (riskLevel === 'Medium') {
-            return 'bg-amber-50 text-amber-700 border border-amber-200';
+        if (normalized.includes('coffee')) {
+            return 'coffee';
         }
-        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+        return 'wheat';
     }
 
-    function riskNarrative(riskLevel) {
-        if (riskLevel === 'High') {
-            return 'High disruption probability detected. Move quickly on alternate routes, supplier diversification, and committed inventory cover.';
-        }
-        if (riskLevel === 'Medium') {
-            return 'Moderate pressure detected. Tighten supplier monitoring and pre-position contingency capacity before costs rise.';
-        }
-        return 'Conditions look comparatively stable. Maintain watchlists and preserve optionality without overcommitting working capital.';
-    }
-
-    function showError(message) {
-        errorBanner.textContent = message;
-        errorBanner.classList.remove('hidden');
-    }
-
-    function hideError() {
-        errorBanner.classList.add('hidden');
-        errorBanner.textContent = '';
-    }
-
-    function applyCropPreset(key) {
-        const preset = cropLibrary[key];
-        if (!preset) {
-            return;
+    function formatCurrency(value) {
+        if (value === null || value === undefined || value === '') {
+            return 'Not calculated yet';
         }
 
-        cropNameInput.value = preset.cropName;
-        regionInput.value = preset.region;
-        hideError();
-        regionInput.focus();
-    }
-
-    function openCropModal(key) {
-        const preset = cropLibrary[key];
-        if (!preset) {
-            return;
-        }
-
-        activeCropPresetKey = key;
-        cropModalLabel.textContent = preset.label;
-        cropModalTitle.textContent = preset.title;
-        cropModalSummary.textContent = preset.summary;
-        cropModalRegion.textContent = preset.region;
-        cropModalRisk.textContent = preset.riskLens;
-        cropModalScenario.textContent = preset.scenario;
-        cropModalImage.src = preset.image;
-        cropModalImage.onerror = () => {
-            cropModalImage.onerror = null;
-            cropModalImage.src = preset.fallbackImage;
-        };
-        cropModalImage.alt = preset.title;
-        cropModal.classList.remove('hidden');
-        cropModal.classList.add('flex');
-        document.body.classList.add('overflow-hidden');
-    }
-
-    function closeCropModalPanel() {
-        cropModal.classList.add('hidden');
-        cropModal.classList.remove('flex');
-        document.body.classList.remove('overflow-hidden');
-        activeCropPresetKey = null;
+        return inrFormatter.format(Number(value));
     }
 
     function buildPriceTrendSeries(items) {
@@ -772,19 +967,20 @@
 
     function buildRiskBreakdown(items) {
         const categories = {
-            Weather: ['heat', 'monsoon', 'rain', 'weather', 'climate', 'temperature', 'storm'],
+            Weather: ['heat', 'rain', 'weather', 'climate', 'temperature', 'storm', 'flood', 'drought'],
+            Disease: ['disease', 'blight', 'fungal', 'pest', 'rot', 'infestation'],
             Logistics: ['transport', 'freight', 'route', 'shipment', 'supplier', 'delivery', 'warehouse'],
-            Market: ['price', 'hedge', 'market', 'export', 'demand', 'cost'],
-            Storage: ['storage', 'inventory', 'buffer', 'cold', 'stock']
+            Market: ['price', 'hedge', 'market', 'export', 'demand', 'cost', 'policy'],
+            Storage: ['storage', 'inventory', 'buffer', 'cold', 'stock', 'moisture']
         };
 
-        const totals = { Weather: 0, Logistics: 0, Market: 0, Storage: 0 };
+        const totals = { Weather: 0, Disease: 0, Logistics: 0, Market: 0, Storage: 0 };
 
         items.forEach(item => {
             const text = `${item.cropName} ${item.region} ${item.mitigationStrategy}`.toLowerCase();
             Object.entries(categories).forEach(([category, keywords]) => {
                 const matches = keywords.filter(keyword => text.includes(keyword)).length;
-                totals[category] += matches > 0 ? matches : (riskLevelPriority[item.riskLevel] || 1) - 1;
+                totals[category] += matches > 0 ? matches : Math.max((riskLevelPriority[item.riskLevel] || 1) - 1, 0);
             });
         });
 
@@ -828,7 +1024,7 @@
     }
 
     function sortHistoryItems(items) {
-        const sortedItems = [...items].sort((left, right) => {
+        return [...items].sort((left, right) => {
             let leftValue = left[currentSort.key] || '';
             let rightValue = right[currentSort.key] || '';
 
@@ -848,8 +1044,6 @@
             }
             return 0;
         });
-
-        return sortedItems;
     }
 
     function renderHistory(items) {
@@ -868,9 +1062,7 @@
             row.innerHTML = `
                 <td class="px-5 py-4 font-medium text-slate-900">${item.cropName}</td>
                 <td class="px-5 py-4">${item.region}</td>
-                <td class="px-5 py-4">
-                    <span class="${badgeClassesForRisk(item.riskLevel)} inline-flex rounded-full px-3 py-1 text-xs font-semibold">${item.riskLevel}</span>
-                </td>
+                <td class="px-5 py-4"><span class="${badgeClassesForRisk(item.riskLevel)} inline-flex rounded-full px-3 py-1 text-xs font-semibold">${item.riskLevel}</span></td>
                 <td class="px-5 py-4 leading-6 text-slate-600">${item.mitigationStrategy}</td>
             `;
             historyTableBody.appendChild(row);
@@ -880,7 +1072,6 @@
     async function loadHistory(page) {
         const response = await fetch(`/api/risk/history?page=${page}&size=8`);
         const data = await response.json();
-
         if (!response.ok) {
             throw new Error(data.message || 'Could not load report history.');
         }
@@ -894,15 +1085,41 @@
         updatePulseCharts(data.items || []);
     }
 
-    function updateLatestResult(data) {
-        latestRiskResult = data;
-        resultCard.classList.remove('hidden');
+    function renderList(element, items, emptyState) {
+        element.innerHTML = '';
+        const safeItems = items && items.length ? items : [emptyState];
+        safeItems.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.className = 'rounded-2xl bg-slate-50 px-3 py-2';
+            listItem.textContent = item;
+            element.appendChild(listItem);
+        });
+    }
+
+    function updateLatestResult(data, payload) {
+        latestReportContext = { response: data, request: payload };
         resultTitle.textContent = `${data.cropName} in ${data.region}`;
-        resultSubtitle.textContent = `AI risk rating generated for ${data.region} with an operational response designed for supply chain teams.`;
+        resultSubtitle.textContent = data.stakeholderType === 'Farmer'
+                ? 'This producer-focused brief explains the likely threat, possible income loss, and practical farm-side actions.'
+                : 'This enterprise-focused brief explains the likely disruption, estimated commercial pressure, and immediate plan B strategy.';
         riskBadge.textContent = data.riskLevel;
-        riskBadge.className = `rounded-full px-4 py-2 text-sm font-semibold ${badgeClassesForRisk(data.riskLevel)}`;
-        mitigationStrategy.textContent = data.mitigationStrategy;
-        executiveSignal.textContent = riskNarrative(data.riskLevel);
+        riskBadge.className = `inline-flex rounded-full px-4 py-2 text-sm font-semibold ${badgeClassesForRisk(data.riskLevel)}`;
+
+        disruptionSummary.textContent = data.disruptionSummary || 'No disruption summary returned.';
+        primaryThreat.textContent = data.primaryThreat || 'No threat identified';
+        detailedProblem.textContent = data.detailedProblem || 'No detailed problem explanation returned.';
+        mitigationStrategy.textContent = data.mitigationStrategy || 'No mitigation strategy returned.';
+        executiveSignal.textContent = riskNarrative(data.riskLevel, data.primaryThreat);
+        supplyImpactValue.textContent = data.expectedSupplyImpactPercent != null ? `${data.expectedSupplyImpactPercent}%` : '--';
+        priceImpactValue.textContent = data.expectedPriceIncreasePercent != null ? `${data.expectedPriceIncreasePercent}%` : '--';
+        resultLossInr.textContent = formatCurrency(data.estimatedLossInr);
+        currentLossInr.textContent = formatCurrency(data.estimatedLossInr);
+        currentStakeholder.textContent = data.stakeholderType || 'Enterprise';
+
+        renderList(riskFactorsList, data.riskFactors, 'No risk factors returned.');
+        renderList(enterpriseActionsList, data.enterpriseActions, 'No enterprise actions returned.');
+        renderList(farmerActionsList, data.farmerActions, 'No farmer actions returned.');
+        renderList(governmentSchemesList, data.governmentSchemes, 'No scheme note returned.');
     }
 
     async function fetchWeather(region) {
@@ -923,7 +1140,6 @@
             const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(region)}&count=1&language=en&format=json`);
             const geoData = await geoResponse.json();
             const location = geoData.results?.[0];
-
             if (!location) {
                 throw new Error('Region not found in the weather service.');
             }
@@ -942,56 +1158,38 @@
         }
     }
 
-    async function generatePdfReport() {
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            showError('The PDF tool is still loading. Please try again in a moment.');
-            return;
-        }
+    function buildPayload(prefix, stakeholderType) {
+        const cropName = document.getElementById(`${prefix}CropName`).value.trim();
+        const region = document.getElementById(`${prefix}Region`).value.trim();
+        const quantityInput = document.getElementById(`${prefix}QuantityTonnes`);
+        const cropRateInput = document.getElementById(`${prefix}CropRatePerKgInr`);
+        const horizonInput = document.getElementById(`${prefix}PlanningHorizonDays`);
+        const farmAreaInput = document.getElementById(`${prefix}FarmAreaAcres`);
 
-        const { jsPDF } = window.jspdf;
-        const documentPdf = new jsPDF();
-        const crop = document.getElementById('cropName').value || 'Not specified';
-        const region = document.getElementById('region').value || 'Not specified';
-        const riskLevel = latestRiskResult?.riskLevel || 'No live result yet';
-        const strategy = latestRiskResult?.mitigationStrategy || 'Run an analysis first to generate a formal mitigation strategy.';
-        const weatherLine = `${weatherRegion.textContent} | ${weatherTemperature.textContent} | ${weatherWind.textContent}`;
-
-        documentPdf.setFont('helvetica', 'bold');
-        documentPdf.setFontSize(22);
-        documentPdf.text('AgriPulse Risk Brief', 20, 22);
-
-        documentPdf.setFont('helvetica', 'normal');
-        documentPdf.setFontSize(11);
-        documentPdf.text(`Crop: ${crop}`, 20, 38);
-        documentPdf.text(`Region: ${region}`, 20, 46);
-        documentPdf.text(`Risk Level: ${riskLevel}`, 20, 54);
-        documentPdf.text(`Weather Snapshot: ${weatherLine}`, 20, 62, { maxWidth: 170 });
-
-        documentPdf.setFont('helvetica', 'bold');
-        documentPdf.text('Plan B Strategy', 20, 82);
-        documentPdf.setFont('helvetica', 'normal');
-        documentPdf.text(documentPdf.splitTextToSize(strategy, 170), 20, 90);
-
-        documentPdf.setFont('helvetica', 'bold');
-        documentPdf.text('Executive Narrative', 20, 124);
-        documentPdf.setFont('helvetica', 'normal');
-        documentPdf.text(documentPdf.splitTextToSize(riskNarrative(riskLevel), 170), 20, 132);
-
-        documentPdf.save(`agripulse-${crop.toLowerCase().replace(/\s+/g, '-')}-${region.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+        return {
+            cropName,
+            region,
+            stakeholderType,
+            quantityTonnes: quantityInput && quantityInput.value ? Number(quantityInput.value) : null,
+            cropRatePerKgInr: cropRateInput && cropRateInput.value ? Number(cropRateInput.value) : null,
+            planningHorizonDays: horizonInput && horizonInput.value ? Number(horizonInput.value) : null,
+            farmAreaAcres: farmAreaInput && farmAreaInput.value ? Number(farmAreaInput.value) : null
+        };
     }
 
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        hideError();
-        spinner.classList.remove('hidden');
-        spinner.classList.add('flex');
-        analyzeButton.disabled = true;
-        analyzeButtonLabel.textContent = 'Analyzing...';
+    function setLoadingState(mode, loading) {
+        const button = mode === 'Farmer' ? farmerAnalyzeButton : enterpriseAnalyzeButton;
+        const label = mode === 'Farmer' ? farmerAnalyzeButtonLabel : enterpriseAnalyzeButtonLabel;
 
-        const payload = {
-            cropName: document.getElementById('cropName').value,
-            region: document.getElementById('region').value
-        };
+        button.disabled = loading;
+        label.textContent = loading
+                ? (mode === 'Farmer' ? 'Analyzing Farmer Risk...' : 'Analyzing Enterprise Risk...')
+                : (mode === 'Farmer' ? 'Analyze Farmer Risk' : 'Analyze Enterprise Risk');
+    }
+
+    async function submitAnalysis(payload) {
+        hideError();
+        setLoadingState(payload.stakeholderType, true);
 
         try {
             const response = await fetch('/api/risk/analyze', {
@@ -1001,22 +1199,250 @@
             });
 
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error(data.message || 'The analysis could not be completed.');
             }
 
-            updateLatestResult(data);
+            updateLatestResult(data, payload);
             await loadHistory(0);
             fetchWeather(payload.region).catch(() => {});
         } catch (error) {
             showError(error.message);
         } finally {
-            spinner.classList.add('hidden');
-            spinner.classList.remove('flex');
-            analyzeButton.disabled = false;
-            analyzeButtonLabel.textContent = 'Analyze Supply Chain';
+            setLoadingState(payload.stakeholderType, false);
         }
+    }
+
+    function applyCropPreset(key, targetForm) {
+        const preset = cropLibrary[key];
+        if (!preset) {
+            return;
+        }
+
+        if (targetForm === 'farmer') {
+            document.getElementById('farmerCropName').value = preset.cropName;
+            document.getElementById('farmerRegion').value = preset.farmerRegion;
+            document.getElementById('farmerQuantityTonnes').value = preset.defaultFarmerQuantity;
+            document.getElementById('farmerCropRatePerKgInr').value = preset.defaultFarmerRate;
+            document.getElementById('farmerFarmAreaAcres').value = preset.defaultFarmAreaAcres;
+        } else {
+            document.getElementById('enterpriseCropName').value = preset.cropName;
+            document.getElementById('enterpriseRegion').value = preset.enterpriseRegion;
+            document.getElementById('enterpriseQuantityTonnes').value = preset.defaultEnterpriseQuantity;
+            document.getElementById('enterpriseCropRatePerKgInr').value = preset.defaultEnterpriseRate;
+            document.getElementById('enterprisePlanningHorizonDays').value = preset.defaultPlanningHorizonDays;
+        }
+
+        hideError();
+    }
+
+    function openCropModal(key) {
+        const preset = cropLibrary[key];
+        if (!preset) {
+            return;
+        }
+
+        activeCropPresetKey = key;
+        cropModalLabel.textContent = preset.label;
+        cropModalTitle.textContent = preset.title;
+        cropModalSummary.textContent = preset.summary;
+        cropModalRegion.textContent = preset.enterpriseRegion;
+        cropModalRisk.textContent = preset.riskLens;
+        cropModalScenario.textContent = preset.scenario;
+        cropModalImage.src = preset.pageImage;
+        cropModalImage.onerror = () => {
+            cropModalImage.onerror = null;
+            cropModalImage.src = preset.fallbackImage;
+        };
+        cropModalImage.alt = preset.title;
+        cropModal.classList.remove('hidden');
+        cropModal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeCropModalPanel() {
+        cropModal.classList.add('hidden');
+        cropModal.classList.remove('flex');
+        document.body.classList.remove('overflow-hidden');
+        activeCropPresetKey = null;
+    }
+
+    async function svgToPngDataUrl(svgPath) {
+        const svgText = await fetch(svgPath).then(response => response.text());
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        try {
+            const image = await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = url;
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 900;
+            canvas.height = 600;
+            const context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/png');
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    function ensurePdfSpace(pdf, y, neededHeight) {
+        if (y + neededHeight <= 275) {
+            return y;
+        }
+        pdf.addPage();
+        return 20;
+    }
+
+    function writePdfSection(pdf, title, lines, y, width = 170) {
+        let cursor = ensurePdfSpace(pdf, y, 18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(13);
+        pdf.text(title, 20, cursor);
+        cursor += 7;
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10.5);
+
+        lines.forEach(line => {
+            const wrapped = pdf.splitTextToSize(line, width);
+            cursor = ensurePdfSpace(pdf, cursor, wrapped.length * 6 + 4);
+            pdf.text(wrapped, 20, cursor);
+            cursor += wrapped.length * 6 + 2;
+        });
+
+        return cursor + 2;
+    }
+
+    async function generatePdfReport(reportType) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            showError('The PDF tool is still loading. Please try again in a moment.');
+            return;
+        }
+
+        if (!latestReportContext) {
+            showError('Run an analysis first so AgriPulse has a report to export.');
+            return;
+        }
+
+        const { response, request } = latestReportContext;
+        const cropKey = normalizeCropKeyFromName(response.cropName);
+        const cropAsset = cropLibrary[cropKey];
+        const cropImage = await svgToPngDataUrl(cropAsset.fallbackImage);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        pdf.setFillColor(22, 101, 52);
+        pdf.rect(0, 0, 210, 18, 'F');
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(11);
+        pdf.text(reportType === 'Farmer' ? 'AgriPulse Farmer Resilience Report' : 'AgriPulse Enterprise Risk Brief', 20, 11);
+
+        pdf.setTextColor(15, 23, 42);
+        pdf.setFontSize(22);
+        pdf.text(`${response.cropName} | ${response.region}`, 20, 30);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Stakeholder: ${reportType}`, 20, 38);
+        pdf.text(`Risk Level: ${response.riskLevel}`, 20, 45);
+        pdf.text(`Primary Threat: ${response.primaryThreat || 'Not specified'}`, 20, 52);
+        pdf.text(`Weather Snapshot: ${weatherRegion.textContent} | ${weatherTemperature.textContent} | ${weatherWind.textContent}`, 20, 59, { maxWidth: 115 });
+
+        pdf.addImage(cropImage, 'PNG', 145, 24, 45, 34);
+
+        pdf.setDrawColor(229, 231, 235);
+        pdf.roundedRect(20, 68, 52, 24, 5, 5);
+        pdf.roundedRect(79, 68, 52, 24, 5, 5);
+        pdf.roundedRect(138, 68, 52, 24, 5, 5);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.text('Supply Impact', 26, 76);
+        pdf.text('Price Pressure', 85, 76);
+        pdf.text('Estimated Loss', 144, 76);
+        pdf.setFontSize(16);
+        pdf.text(response.expectedSupplyImpactPercent != null ? `${response.expectedSupplyImpactPercent}%` : '--', 26, 87);
+        pdf.text(response.expectedPriceIncreasePercent != null ? `${response.expectedPriceIncreasePercent}%` : '--', 85, 87);
+        pdf.text(response.estimatedLossInr != null ? formatCurrency(response.estimatedLossInr) : 'Not calculated', 144, 87, { maxWidth: 40 });
+
+        let y = 105;
+        y = writePdfSection(pdf, '1. What problem is disrupting this area?', [
+            response.disruptionSummary || 'No disruption summary was returned.',
+            response.detailedProblem || 'No detailed problem explanation was returned.'
+        ], y);
+
+        const factorLines = (response.riskFactors || []).length
+                ? response.riskFactors.map((factor, index) => `${index + 1}. ${factor}`)
+                : ['No risk factors were returned by the model.'];
+        y = writePdfSection(pdf, '2. Key disruption factors', factorLines, y);
+
+        y = ensurePdfSpace(pdf, y, 90);
+        if (priceTrendChart) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(13);
+            pdf.text('3. Price Trend Chart', 20, y);
+            y += 5;
+            pdf.addImage(priceTrendChart.toBase64Image(), 'PNG', 20, y, 80, 45);
+            if (riskBreakdownChart) {
+                pdf.addImage(riskBreakdownChart.toBase64Image(), 'PNG', 110, y, 80, 45);
+            }
+            y += 52;
+        }
+
+        const lossExplanation = [];
+        if (request.quantityTonnes) {
+            lossExplanation.push(`Quantity considered: ${request.quantityTonnes} tonnes.`);
+        }
+        if (request.cropRatePerKgInr) {
+            lossExplanation.push(`Crop rate considered: INR ${request.cropRatePerKgInr} per kg.`);
+        }
+        if (request.farmAreaAcres) {
+            lossExplanation.push(`Farm area considered: ${request.farmAreaAcres} acres.`);
+        }
+        if (request.planningHorizonDays) {
+            lossExplanation.push(`Planning horizon considered: ${request.planningHorizonDays} days.`);
+        }
+        if (response.estimatedLossPercent != null) {
+            lossExplanation.push(`Estimated loss percent from the AI assessment: ${response.estimatedLossPercent}%.`);
+        }
+        lossExplanation.push(`Estimated rupee loss: ${formatCurrency(response.estimatedLossInr)}.`);
+        y = writePdfSection(pdf, '4. Exposure and loss calculation', lossExplanation, y);
+
+        const actionLines = reportType === 'Farmer'
+                ? (response.farmerActions || []).map((item, index) => `${index + 1}. ${item}`)
+                : (response.enterpriseActions || []).map((item, index) => `${index + 1}. ${item}`);
+        y = writePdfSection(
+                pdf,
+                reportType === 'Farmer' ? '5. Farmer action plan' : '5. Enterprise action plan',
+                actionLines.length ? actionLines : ['No role-specific actions were returned.'],
+                y
+        );
+
+        y = writePdfSection(pdf, '6. Plan B strategy', [response.mitigationStrategy || 'No mitigation strategy returned.'], y);
+
+        if (reportType === 'Farmer') {
+            const schemeLines = (response.governmentSchemes || []).length
+                    ? response.governmentSchemes.map((item, index) => `${index + 1}. ${item}`)
+                    : ['No farmer scheme note was returned by the model.'];
+            y = writePdfSection(pdf, '7. Farmer schemes and support notes', schemeLines, y);
+        } else {
+            y = writePdfSection(pdf, '7. Executive note', [riskNarrative(response.riskLevel, response.primaryThreat)], y);
+        }
+
+        pdf.save(`agripulse-${reportType.toLowerCase()}-${response.cropName.toLowerCase().replace(/\s+/g, '-')}-${response.region.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+    }
+
+    enterpriseForm.addEventListener('submit', event => {
+        event.preventDefault();
+        submitAnalysis(buildPayload('enterprise', 'Enterprise'));
+    });
+
+    farmerForm.addEventListener('submit', event => {
+        event.preventDefault();
+        submitAnalysis(buildPayload('farmer', 'Farmer'));
     });
 
     prevPageButton.addEventListener('click', () => {
@@ -1054,46 +1480,51 @@
 
     document.querySelectorAll('[data-use-crop]').forEach(button => {
         button.addEventListener('click', () => {
-            applyCropPreset(button.dataset.useCrop);
+            applyCropPreset(button.dataset.useCrop, button.dataset.targetForm);
         });
     });
 
-    applyCropPresetButton.addEventListener('click', () => {
+    applyCropPresetEnterprise.addEventListener('click', () => {
         if (activeCropPresetKey) {
-            applyCropPreset(activeCropPresetKey);
+            applyCropPreset(activeCropPresetKey, 'enterprise');
             closeCropModalPanel();
+            document.getElementById('enterpriseRegion').focus();
         }
     });
 
-    focusRegionInputButton.addEventListener('click', () => {
+    applyCropPresetFarmer.addEventListener('click', () => {
         if (activeCropPresetKey) {
-            applyCropPreset(activeCropPresetKey);
+            applyCropPreset(activeCropPresetKey, 'farmer');
+            closeCropModalPanel();
+            document.getElementById('farmerRegion').focus();
         }
-        closeCropModalPanel();
-        regionInput.focus();
     });
 
     closeCropModal.addEventListener('click', closeCropModalPanel);
-
     cropModal.addEventListener('click', event => {
         if (event.target === cropModal) {
             closeCropModalPanel();
         }
     });
-
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape' && !cropModal.classList.contains('hidden')) {
             closeCropModalPanel();
         }
     });
 
-    pdfButton.addEventListener('click', generatePdfReport);
+    pdfButton.addEventListener('click', () => generatePdfReport(latestReportContext?.response?.stakeholderType || 'Enterprise'));
+    enterprisePdfButton.addEventListener('click', () => generatePdfReport('Enterprise'));
+    farmerPdfButton.addEventListener('click', () => generatePdfReport('Farmer'));
 
+    decorateInteractiveCopy();
     initializeCharts();
     updateRiskMap(initialMapPoints);
     renderHistory(initialRecentReports);
     updatePulseCharts(initialRecentReports);
     fetchWeather(initialRecentReports[0]?.region || '');
+
+    applyCropPreset('rice', 'enterprise');
+    applyCropPreset('wheat', 'farmer');
 </script>
 </body>
 </html>

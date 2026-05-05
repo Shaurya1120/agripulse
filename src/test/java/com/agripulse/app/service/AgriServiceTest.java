@@ -44,11 +44,17 @@ class AgriServiceTest {
 
     @Test
     void analyzeRiskPersistsNormalizedAiResponse() {
-        RiskAnalysisRequest request = new RiskAnalysisRequest("Wheat", "Punjab");
-        AiRiskAssessment aiRiskAssessment = new AiRiskAssessment(
-                "high",
-                "Shift part of sourcing to a cooler nearby region and hedge transport costs."
-        );
+        RiskAnalysisRequest request = new RiskAnalysisRequest();
+        request.setCropName("Wheat");
+        request.setRegion("Punjab");
+        request.setStakeholderType("enterprise");
+
+        AiRiskAssessment aiRiskAssessment = new AiRiskAssessment();
+        aiRiskAssessment.setRiskLevel("high");
+        aiRiskAssessment.setMitigationStrategy("Shift part of sourcing to a cooler nearby region and hedge transport costs.");
+        aiRiskAssessment.setDisruptionSummary("Heat and logistics pressure are tightening the wheat corridor.");
+        aiRiskAssessment.setPrimaryThreat("Heat wave");
+        aiRiskAssessment.setDetailedProblem("Heat stress is reducing quality and raising storage risk.");
 
         when(chatClient.prompt()).thenReturn(chatClientRequestSpec);
         when(chatClientRequestSpec.system(anyString())).thenReturn(chatClientRequestSpec);
@@ -78,4 +84,3 @@ class AgriServiceTest {
         assertThat(response.getRegion()).isEqualTo("Punjab");
     }
 }
-

@@ -8,7 +8,10 @@ import com.agripulse.app.dto.RiskMapPoint;
 import com.agripulse.app.dto.UiDashboardData;
 import com.agripulse.app.model.RiskReport;
 import com.agripulse.app.repository.RiskReportRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,12 +35,15 @@ public class AgriService {
     private static final String SYSTEM_PROMPT = """
             You are an Agri-Business Expert.
             Analyze the supply chain risk for the given crop and region.
-            Return a Risk Level and a Plan B strategy.
+            Return a Risk Level, a detailed disruption explanation, and a Plan B strategy.
             If the risk level is High, call the sendEmergencyAlert tool before finalizing your answer.
             Keep the risk level limited to one of these values only: Low, Medium, High.
             The only tool you are allowed to call is sendEmergencyAlert.
             Never call any tool named analyzeSupplyChainRisk or any other tool name.
             Do not invent tools. If risk is not High, do not call any tool.
+            Include practical detail about real disruption causes such as crop disease, heat wave, excess rainfall,
+            flood risk, transport bottlenecks, market price swings, storage stress, and policy/export shocks when relevant.
+            Tailor the answer to either an enterprise buyer or a farmer-producer based on stakeholderType.
             """;
 
     private final ChatClient agriChatClient;
@@ -54,16 +60,38 @@ public class AgriService {
                     .user(userSpec -> userSpec.text("""
                             Crop Name: {cropName}
                             Region: {region}
+                            Stakeholder Type: {stakeholderType}
+                            Quantity Tonnes: {quantityTonnes}
+                            Crop Rate INR per Kg: {cropRatePerKgInr}
+                            Farm Area Acres: {farmAreaAcres}
+                            Planning Horizon Days: {planningHorizonDays}
 
                             Analyze the agricultural supply chain risk for this crop and region.
-                            Return a short mitigation strategy that a business user can act on.
+                            Return a detailed, structured answer with:
+                            - riskLevel
+                            - disruptionSummary
+                            - primaryThreat
+                            - detailedProblem
+                            - riskFactors as a short list
+                            - mitigationStrategy
+                            - enterpriseActions as a short list
+                            - farmerActions as a short list
+                            - governmentSchemes as a short list relevant for India when useful
+                            - expectedSupplyImpactPercent as an integer
+                            - expectedPriceIncreasePercent as an integer
+                            - estimatedLossPercent as an integer
                             If the risk is High, call the sendEmergencyAlert tool using the same cropName, region,
                             riskLevel, and mitigationStrategy before you complete the response.
                             Do not call analyzeSupplyChainRisk. That is not a real tool.
                             Return only the structured risk result for this request.
                             """)
                             .param("cropName", request.getCropName())
-                            .param("region", request.getRegion()))
+                            .param("region", request.getRegion())
+                            .param("stakeholderType", normalizeStakeholderType(request))
+                            .param("quantityTonnes", safeNumber(request.getQuantityTonnes()))
+                            .param("cropRatePerKgInr", safeNumber(request.getCropRatePerKgInr()))
+                            .param("farmAreaAcres", safeNumber(request.getFarmAreaAcres()))
+                            .param("planningHorizonDays", request.getPlanningHorizonDays() == null ? "Not provided" : request.getPlanningHorizonDays()))
                     .call()
                     .entity(AiRiskAssessment.class);
 
@@ -74,7 +102,31 @@ public class AgriService {
             riskReport.setMitigationStrategy(normalizeMitigationStrategy(aiRiskAssessment));
 
             RiskReport savedRiskReport = riskReportRepository.save(riskReport);
-            return RiskAnalysisResponse.fromEntity(savedRiskReport);
+            BigDecimal estimatedLossInr = estimateLossInr(request, aiRiskAssessment);
+
+            return new RiskAnalysisResponse(
+                    savedRiskReport.getId(),
+                    savedRiskReport.getCropName(),
+                    savedRiskReport.getRegion(),
+                    savedRiskReport.getRiskLevel(),
+                    savedRiskReport.getMitigationStrategy(),
+                    normalizeStakeholderType(request),
+                    defaultText(aiRiskAssessment.getDisruptionSummary(), "AgriPulse identified meaningful disruption pressure in this corridor."),
+                    defaultText(aiRiskAssessment.getPrimaryThreat(), "Supply chain volatility"),
+                    defaultText(aiRiskAssessment.getDetailedProblem(), "The model did not return a full disruption explanation."),
+                    normalizeList(aiRiskAssessment.getRiskFactors()),
+                    normalizeList(aiRiskAssessment.getEnterpriseActions()),
+                    normalizeList(aiRiskAssessment.getFarmerActions()),
+                    normalizeList(aiRiskAssessment.getGovernmentSchemes()),
+                    normalizePercent(aiRiskAssessment.getExpectedSupplyImpactPercent()),
+                    normalizePercent(aiRiskAssessment.getExpectedPriceIncreasePercent()),
+                    normalizePercent(aiRiskAssessment.getEstimatedLossPercent()),
+                    request.getQuantityTonnes(),
+                    request.getCropRatePerKgInr(),
+                    request.getFarmAreaAcres(),
+                    request.getPlanningHorizonDays(),
+                    estimatedLossInr
+            );
         }
         catch (NonTransientAiException exception) {
             log.warn(
@@ -136,6 +188,63 @@ public class AgriService {
         }
 
         return aiRiskAssessment.getMitigationStrategy().trim();
+    }
+
+    private String normalizeStakeholderType(RiskAnalysisRequest request) {
+        if (request == null || !StringUtils.hasText(request.getStakeholderType())) {
+            return "Enterprise";
+        }
+
+        String normalized = request.getStakeholderType().trim().toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case "farmer", "producer" -> "Farmer";
+            default -> "Enterprise";
+        };
+    }
+
+    private String defaultText(String value, String fallback) {
+        return StringUtils.hasText(value) ? value.trim() : fallback;
+    }
+
+    private List<String> normalizeList(List<String> items) {
+        if (items == null || items.isEmpty()) {
+            return List.of();
+        }
+
+        return items.stream()
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .limit(6)
+                .toList();
+    }
+
+    private Integer normalizePercent(Integer value) {
+        if (value == null) {
+            return null;
+        }
+
+        return Math.max(0, Math.min(value, 100));
+    }
+
+    private String safeNumber(BigDecimal value) {
+        return value == null ? "Not provided" : value.stripTrailingZeros().toPlainString();
+    }
+
+    private BigDecimal estimateLossInr(RiskAnalysisRequest request, AiRiskAssessment aiRiskAssessment) {
+        if (request == null || request.getQuantityTonnes() == null || request.getCropRatePerKgInr() == null) {
+            return null;
+        }
+
+        Integer lossPercent = normalizePercent(aiRiskAssessment.getEstimatedLossPercent());
+        if (lossPercent == null) {
+            return null;
+        }
+
+        return request.getQuantityTonnes()
+                .multiply(BigDecimal.valueOf(1000))
+                .multiply(request.getCropRatePerKgInr())
+                .multiply(BigDecimal.valueOf(lossPercent))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 
     public HistoryPageResponse getHistoryPage(int page, int size) {
