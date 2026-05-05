@@ -45,6 +45,8 @@ public class AgriService {
             Treat the provided location as exact user input. If the user gives a district, city, block, or state such as
             Malda, West Bengal, use that exact place in your reasoning instead of replacing it with a generic region.
             Use simple language that a new visitor can understand quickly.
+            Treat the verified live weather evidence as factual.
+            Do not contradict the verified weather evidence.
             For enterprise buyers and exporters, avoid weak generic advice like only saying diversify suppliers.
             Give stronger, specific alternatives when possible such as cheaper nearby sourcing belts, substitute states,
             backup procurement zones, mandi clusters, or lower-risk logistics corridors that make business sense.
@@ -69,6 +71,8 @@ public class AgriService {
         }
 
         try {
+            WeatherEvidence weatherEvidence = buildWeatherEvidence(request);
+
             AiRiskAssessment aiRiskAssessment = agriChatClient.prompt()
                     .system(SYSTEM_PROMPT)
                     .user(userSpec -> userSpec.text("""
@@ -80,6 +84,10 @@ public class AgriService {
                             Farm Area Acres: {farmAreaAcres}
                             Planning Horizon Days: {planningHorizonDays}
                             Live Weather Context: {weatherContext}
+                            Verified Weather Risk Level: {verifiedRiskLevel}
+                            Verified Primary Threat: {verifiedPrimaryThreat}
+                            Verified Weather Summary: {verifiedSummary}
+                            Verified Weather Factors: {verifiedFactors}
 
                             Analyze the current agricultural supply chain risk for this crop and exact location.
                             Return a detailed, structured answer with:
@@ -105,7 +113,8 @@ public class AgriService {
                             Clearly describe the actual local problem in that place.
                             For enterpriseActions, mention stronger practical sourcing or route actions with example
                             locations or cheaper fallback areas whenever possible instead of vague advice.
-                            Use No Risk if no meaningful current disruption is visible.
+                            Keep your answer aligned with the verified weather evidence above.
+                            If the verified risk level is No Risk or Low, do not describe a severe disruption.
                             Return only the structured risk result for this request.
                             """)
                             .param("cropName", request.getCropName())
@@ -115,12 +124,18 @@ public class AgriService {
                             .param("cropRatePerKgInr", safeNumber(request.getCropRatePerKgInr()))
                             .param("farmAreaAcres", safeNumber(request.getFarmAreaAcres()))
                             .param("planningHorizonDays", request.getPlanningHorizonDays() == null ? "Not provided" : request.getPlanningHorizonDays())
-                            .param("weatherContext", StringUtils.hasText(request.getWeatherContext()) ? request.getWeatherContext() : "Not provided"))
+                            .param("weatherContext", StringUtils.hasText(request.getWeatherContext()) ? request.getWeatherContext() : "Not provided")
+                            .param("verifiedRiskLevel", weatherEvidence.riskLevel())
+                            .param("verifiedPrimaryThreat", weatherEvidence.primaryThreat())
+                            .param("verifiedSummary", weatherEvidence.disruptionSummary())
+                            .param("verifiedFactors", String.join(", ", weatherEvidence.riskFactors())))
                     .call()
                     .entity(AiRiskAssessment.class);
 
             String normalizedRiskLevel = normalizeRiskLevel(aiRiskAssessment);
-            String adjustedRiskLevel = adjustRiskLevelForLiveSignals(normalizedRiskLevel, request, aiRiskAssessment);
+            String adjustedRiskLevel = weatherEvidence.liveEvidenceAvailable()
+                    ? weatherEvidence.riskLevel()
+                    : adjustRiskLevelForLiveSignals(normalizedRiskLevel, request, aiRiskAssessment);
 
             RiskReport riskReport = new RiskReport();
             riskReport.setCropName(request.getCropName().trim());
@@ -129,7 +144,6 @@ public class AgriService {
             riskReport.setMitigationStrategy(normalizeMitigationStrategy(aiRiskAssessment));
 
             RiskReport savedRiskReport = riskReportRepository.save(riskReport);
-            BigDecimal estimatedLossInr = estimateLossInr(request, aiRiskAssessment);
 
             if ("High".equalsIgnoreCase(adjustedRiskLevel) || "Very High".equalsIgnoreCase(adjustedRiskLevel)) {
                 emergencyAlertTool.sendEmergencyAlert(
@@ -147,27 +161,27 @@ public class AgriService {
                     adjustedRiskLevel,
                     savedRiskReport.getMitigationStrategy(),
                     normalizeStakeholderType(request),
-                    defaultText(aiRiskAssessment.getDisruptionSummary(), "AgriPulse identified meaningful disruption pressure in this corridor."),
-                    defaultText(aiRiskAssessment.getPrimaryThreat(), "Supply chain volatility"),
-                    defaultText(aiRiskAssessment.getDetailedProblem(), "The model did not return a full disruption explanation."),
-                    normalizeList(aiRiskAssessment.getRiskFactors()),
+                    chooseDisruptionSummary(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
+                    choosePrimaryThreat(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
+                    chooseDetailedProblem(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
+                    chooseRiskFactors(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
                     normalizeList(aiRiskAssessment.getEnterpriseActions()),
                     normalizeList(aiRiskAssessment.getFarmerActions()),
                     normalizeList(aiRiskAssessment.getGovernmentSchemes()),
-                    defaultText(aiRiskAssessment.getHindiDisruptionSummary(), defaultText(aiRiskAssessment.getDisruptionSummary(), "Hindi summary not returned.")),
-                    defaultText(aiRiskAssessment.getHindiPrimaryThreat(), defaultText(aiRiskAssessment.getPrimaryThreat(), "Hindi threat not returned.")),
-                    defaultText(aiRiskAssessment.getHindiDetailedProblem(), defaultText(aiRiskAssessment.getDetailedProblem(), "Hindi problem explanation not returned.")),
+                    chooseHindiSummary(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
+                    chooseHindiPrimaryThreat(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
+                    chooseHindiDetailedProblem(aiRiskAssessment, weatherEvidence, adjustedRiskLevel),
                     defaultText(aiRiskAssessment.getHindiMitigationStrategy(), normalizeMitigationStrategy(aiRiskAssessment)),
                     normalizeList(aiRiskAssessment.getHindiFarmerActions()),
                     normalizeList(aiRiskAssessment.getHindiGovernmentSchemes()),
-                    normalizePercent(aiRiskAssessment.getExpectedSupplyImpactPercent()),
-                    normalizePercent(aiRiskAssessment.getExpectedPriceIncreasePercent()),
-                    normalizePercent(aiRiskAssessment.getEstimatedLossPercent()),
+                    chooseExpectedSupplyImpact(aiRiskAssessment, weatherEvidence),
+                    chooseExpectedPriceIncrease(aiRiskAssessment, weatherEvidence),
+                    chooseEstimatedLossPercent(aiRiskAssessment, weatherEvidence),
                     request.getQuantityTonnes(),
                     request.getCropRatePerKgInr(),
                     request.getFarmAreaAcres(),
                     request.getPlanningHorizonDays(),
-                    estimatedLossInr
+                    recalculateLossFromEvidence(request, aiRiskAssessment, weatherEvidence)
             );
         }
         catch (NonTransientAiException exception) {
@@ -232,6 +246,51 @@ public class AgriService {
         }
 
         return aiRiskAssessment.getMitigationStrategy().trim();
+    }
+
+    private WeatherEvidence buildWeatherEvidence(RiskAnalysisRequest request) {
+        String weatherContext = request == null ? "" : defaultText(request.getWeatherContext(), "");
+        if (!StringUtils.hasText(weatherContext) || weatherContext.toLowerCase(Locale.ROOT).contains("weather unavailable")) {
+            return new WeatherEvidence(
+                    false,
+                    "Low",
+                    "Limited live weather confirmation",
+                    "Live weather data is unavailable, so this report should be treated as a lower-confidence operational snapshot.",
+                    "Live weather data is unavailable for this exact place, so this report should be treated with caution.",
+                    List.of("Live weather data unavailable"),
+                    5,
+                    3,
+                    4
+            );
+        }
+
+        String normalized = weatherContext.toLowerCase(Locale.ROOT);
+        Integer weatherCode = extractIntAfter(normalized, "code ");
+        Integer windSpeed = extractIntAfter(normalized, "wind ");
+        Integer temperature = extractTemperatureCelsius(normalized);
+
+        int weatherScore = scoreWeatherCode(weatherCode);
+        int windScore = scoreWind(windSpeed);
+        int temperatureScore = scoreTemperature(temperature);
+        int totalScore = Math.min(weatherScore + windScore + temperatureScore, 100);
+
+        String riskLevel = mapScoreToRisk(totalScore);
+        String primaryThreat = determinePrimaryThreat(weatherCode, windSpeed, temperature, weatherScore, windScore, temperatureScore);
+        List<String> factors = buildWeatherFactors(weatherCode, windSpeed, temperature, totalScore);
+        String summary = buildEvidenceSummary(riskLevel, primaryThreat, request == null ? "" : request.getRegion());
+        String detailedProblem = buildDetailedEvidenceProblem(weatherCode, windSpeed, temperature, riskLevel, primaryThreat);
+
+        return new WeatherEvidence(
+                true,
+                riskLevel,
+                primaryThreat,
+                summary,
+                detailedProblem,
+                factors,
+                supplyImpactForRisk(riskLevel),
+                priceImpactForRisk(riskLevel),
+                lossImpactForRisk(riskLevel)
+        );
     }
 
     private String adjustRiskLevelForLiveSignals(String normalizedRiskLevel, RiskAnalysisRequest request, AiRiskAssessment aiRiskAssessment) {
@@ -347,6 +406,286 @@ public class AgriService {
         return false;
     }
 
+    private Integer chooseExpectedSupplyImpact(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
+        return weatherEvidence.liveEvidenceAvailable()
+                ? weatherEvidence.expectedSupplyImpactPercent()
+                : normalizePercent(aiRiskAssessment.getExpectedSupplyImpactPercent());
+    }
+
+    private Integer chooseExpectedPriceIncrease(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
+        return weatherEvidence.liveEvidenceAvailable()
+                ? weatherEvidence.expectedPriceIncreasePercent()
+                : normalizePercent(aiRiskAssessment.getExpectedPriceIncreasePercent());
+    }
+
+    private Integer chooseEstimatedLossPercent(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
+        return weatherEvidence.liveEvidenceAvailable()
+                ? weatherEvidence.estimatedLossPercent()
+                : normalizePercent(aiRiskAssessment.getEstimatedLossPercent());
+    }
+
+    private String chooseDisruptionSummary(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
+        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
+            return weatherEvidence.disruptionSummary();
+        }
+        return defaultText(aiRiskAssessment.getDisruptionSummary(), weatherEvidence.disruptionSummary());
+    }
+
+    private String choosePrimaryThreat(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
+        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
+            return weatherEvidence.primaryThreat();
+        }
+        return defaultText(aiRiskAssessment.getPrimaryThreat(), weatherEvidence.primaryThreat());
+    }
+
+    private String chooseDetailedProblem(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
+        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
+            return weatherEvidence.detailedProblem();
+        }
+        return defaultText(aiRiskAssessment.getDetailedProblem(), weatherEvidence.detailedProblem());
+    }
+
+    private List<String> chooseRiskFactors(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
+        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
+            return weatherEvidence.riskFactors();
+        }
+
+        List<String> aiFactors = normalizeList(aiRiskAssessment.getRiskFactors());
+        if (aiFactors.isEmpty()) {
+            return weatherEvidence.riskFactors();
+        }
+
+        return java.util.stream.Stream.concat(weatherEvidence.riskFactors().stream(), aiFactors.stream())
+                .distinct()
+                .limit(6)
+                .toList();
+    }
+
+    private String chooseHindiSummary(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
+        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
+            return hindiSummaryForEvidence(weatherEvidence);
+        }
+        return defaultText(aiRiskAssessment.getHindiDisruptionSummary(), hindiSummaryForEvidence(weatherEvidence));
+    }
+
+    private String chooseHindiPrimaryThreat(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
+        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
+            return hindiPrimaryThreatForEvidence(weatherEvidence);
+        }
+        return defaultText(aiRiskAssessment.getHindiPrimaryThreat(), hindiPrimaryThreatForEvidence(weatherEvidence));
+    }
+
+    private String chooseHindiDetailedProblem(AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence, String finalRiskLevel) {
+        if (weatherEvidence.liveEvidenceAvailable() && ("No Risk".equals(finalRiskLevel) || "Low".equals(finalRiskLevel))) {
+            return hindiDetailedProblemForEvidence(weatherEvidence);
+        }
+        return defaultText(aiRiskAssessment.getHindiDetailedProblem(), hindiDetailedProblemForEvidence(weatherEvidence));
+    }
+
+    private BigDecimal recalculateLossFromEvidence(RiskAnalysisRequest request, AiRiskAssessment aiRiskAssessment, WeatherEvidence weatherEvidence) {
+        Integer lossPercent = chooseEstimatedLossPercent(aiRiskAssessment, weatherEvidence);
+        if (request == null || request.getQuantityTonnes() == null || request.getCropRatePerKgInr() == null || lossPercent == null) {
+            return null;
+        }
+
+        return request.getQuantityTonnes()
+                .multiply(BigDecimal.valueOf(1000))
+                .multiply(request.getCropRatePerKgInr())
+                .multiply(BigDecimal.valueOf(lossPercent))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    }
+
+    private int scoreWeatherCode(Integer weatherCode) {
+        if (weatherCode == null) {
+            return 10;
+        }
+        return switch (weatherCode) {
+            case 0, 1, 2, 3 -> 0;
+            case 45, 48 -> 5;
+            case 51, 53, 55 -> 10;
+            case 56, 57 -> 20;
+            case 61, 63, 71, 73, 80 -> 20;
+            case 65, 75, 77, 81 -> 35;
+            case 66, 67, 82, 85, 86 -> 45;
+            case 95 -> 55;
+            case 96, 99 -> 70;
+            default -> 15;
+        };
+    }
+
+    private int scoreWind(Integer windSpeed) {
+        if (windSpeed == null) {
+            return 0;
+        }
+        if (windSpeed > 50) return 25;
+        if (windSpeed > 35) return 15;
+        if (windSpeed > 25) return 8;
+        return 0;
+    }
+
+    private int scoreTemperature(Integer temperature) {
+        if (temperature == null) {
+            return 0;
+        }
+        if (temperature >= 42) return 35;
+        if (temperature >= 38) return 25;
+        if (temperature >= 35) return 12;
+        if (temperature <= 3) return 25;
+        if (temperature <= 7) return 12;
+        return 0;
+    }
+
+    private String mapScoreToRisk(int score) {
+        if (score >= 70) return "Very High";
+        if (score >= 45) return "High";
+        if (score >= 25) return "Medium";
+        if (score >= 10) return "Low";
+        return "No Risk";
+    }
+
+    private String determinePrimaryThreat(Integer weatherCode, Integer windSpeed, Integer temperature, int weatherScore, int windScore, int temperatureScore) {
+        if (temperatureScore > 0 && temperatureScore >= weatherScore && temperatureScore >= windScore && temperature != null) {
+            return temperature >= 35 ? "Heat stress" : "Cold stress";
+        }
+        if (weatherScore > 0 && weatherScore >= windScore && weatherCode != null) {
+            if (Arrays.asList(65, 66, 67, 80, 81, 82, 95, 96, 99).contains(weatherCode)) {
+                return "Heavy rain or storm activity";
+            }
+            if (Arrays.asList(51, 53, 55, 61, 63).contains(weatherCode)) {
+                return "Rain pressure";
+            }
+        }
+        if (windScore > 0 && windSpeed != null) {
+            return "Strong wind exposure";
+        }
+        return "Stable weather conditions";
+    }
+
+    private List<String> buildWeatherFactors(Integer weatherCode, Integer windSpeed, Integer temperature, int totalScore) {
+        java.util.ArrayList<String> factors = new java.util.ArrayList<>();
+        if (temperature != null) {
+            if (temperature >= 38) {
+                factors.add("Very high temperature is stressing the crop environment.");
+            }
+            else if (temperature >= 35) {
+                factors.add("High temperature can increase crop stress and irrigation demand.");
+            }
+            else if (temperature <= 7) {
+                factors.add("Low temperature can slow crop activity and affect quality.");
+            }
+        }
+        if (windSpeed != null && windSpeed > 25) {
+            factors.add("Wind speed is high enough to affect field operations and handling.");
+        }
+        if (weatherCode != null) {
+            if (Arrays.asList(65, 66, 67, 82, 95, 96, 99).contains(weatherCode)) {
+                factors.add("The live weather code points to heavy rain, storm, or severe precipitation.");
+            }
+            else if (Arrays.asList(51, 53, 55, 61, 63, 80, 81).contains(weatherCode)) {
+                factors.add("The live weather code shows active rain or showers.");
+            }
+        }
+        if (factors.isEmpty()) {
+            if (totalScore < 10) {
+                factors.add("No strong live weather disruption is visible right now.");
+            } else {
+                factors.add("Only mild live weather pressure is visible right now.");
+            }
+        }
+        return factors.stream().limit(5).toList();
+    }
+
+    private String buildEvidenceSummary(String riskLevel, String primaryThreat, String region) {
+        if ("No Risk".equals(riskLevel)) {
+            return "No strong live weather disruption is visible right now for " + defaultText(region, "this location") + ".";
+        }
+        if ("Low".equals(riskLevel)) {
+            return "Only mild live weather pressure is visible right now for " + defaultText(region, "this location") + ".";
+        }
+        return primaryThreat + " is creating live operational pressure in " + defaultText(region, "this location") + ".";
+    }
+
+    private String buildDetailedEvidenceProblem(Integer weatherCode, Integer windSpeed, Integer temperature, String riskLevel, String primaryThreat) {
+        if ("No Risk".equals(riskLevel)) {
+            return "The live weather snapshot looks stable enough that no clear current disruption signal is visible from weather alone.";
+        }
+
+        StringBuilder builder = new StringBuilder(primaryThreat)
+                .append(" is the strongest verified live weather signal.");
+        if (temperature != null) {
+            builder.append(" Temperature is ").append(temperature).append(" C.");
+        }
+        if (windSpeed != null) {
+            builder.append(" Wind is ").append(windSpeed).append(" km/h.");
+        }
+        if (weatherCode != null) {
+            builder.append(" Weather code ").append(weatherCode).append(" adds current field-condition evidence.");
+        }
+        builder.append(" This report is grounded first in the live weather snapshot, so the operational explanation should be read as a weather-linked risk signal.");
+        return builder.toString();
+    }
+
+    private Integer supplyImpactForRisk(String riskLevel) {
+        return switch (riskLevel) {
+            case "No Risk" -> 1;
+            case "Low" -> 5;
+            case "Medium" -> 12;
+            case "High" -> 24;
+            case "Very High" -> 40;
+            default -> 8;
+        };
+    }
+
+    private Integer priceImpactForRisk(String riskLevel) {
+        return switch (riskLevel) {
+            case "No Risk" -> 0;
+            case "Low" -> 3;
+            case "Medium" -> 8;
+            case "High" -> 16;
+            case "Very High" -> 28;
+            default -> 6;
+        };
+    }
+
+    private Integer lossImpactForRisk(String riskLevel) {
+        return switch (riskLevel) {
+            case "No Risk" -> 0;
+            case "Low" -> 4;
+            case "Medium" -> 10;
+            case "High" -> 20;
+            case "Very High" -> 35;
+            default -> 8;
+        };
+    }
+
+    private String hindiSummaryForEvidence(WeatherEvidence weatherEvidence) {
+        if ("No Risk".equals(weatherEvidence.riskLevel())) {
+            return "लाइव मौसम के आधार पर अभी कोई बड़ा जोखिम संकेत नहीं दिख रहा है।";
+        }
+        if ("Low".equals(weatherEvidence.riskLevel())) {
+            return "लाइव मौसम के आधार पर अभी हल्का दबाव दिख रहा है।";
+        }
+        return "लाइव मौसम के आधार पर अभी " + weatherEvidence.primaryThreat() + " का असर दिख रहा है।";
+    }
+
+    private String hindiPrimaryThreatForEvidence(WeatherEvidence weatherEvidence) {
+        return switch (weatherEvidence.primaryThreat()) {
+            case "Heat stress" -> "गर्मी का दबाव";
+            case "Cold stress" -> "ठंड का दबाव";
+            case "Heavy rain or storm activity" -> "भारी बारिश या तूफानी गतिविधि";
+            case "Rain pressure" -> "बारिश का दबाव";
+            case "Strong wind exposure" -> "तेज हवा का असर";
+            default -> "मौसम की स्थिति सामान्य है";
+        };
+    }
+
+    private String hindiDetailedProblemForEvidence(WeatherEvidence weatherEvidence) {
+        if ("No Risk".equals(weatherEvidence.riskLevel())) {
+            return "लाइव मौसम संकेतों के आधार पर अभी कोई स्पष्ट बड़ी बाधा नहीं दिख रही है।";
+        }
+        return "यह रिपोर्ट पहले लाइव मौसम संकेतों पर आधारित है। " + hindiPrimaryThreatForEvidence(weatherEvidence) + " इस समय सबसे बड़ा सत्यापित संकेत है।";
+    }
+
     private String normalizeStakeholderType(RiskAnalysisRequest request) {
         if (request == null || !StringUtils.hasText(request.getStakeholderType())) {
             return "Enterprise";
@@ -449,5 +788,18 @@ public class AgriService {
                 mapPoints,
                 recentReports.stream().limit(10).map(RiskAnalysisResponse::fromEntity).toList()
         );
+    }
+
+    private record WeatherEvidence(
+            boolean liveEvidenceAvailable,
+            String riskLevel,
+            String primaryThreat,
+            String disruptionSummary,
+            String detailedProblem,
+            List<String> riskFactors,
+            Integer expectedSupplyImpactPercent,
+            Integer expectedPriceIncreasePercent,
+            Integer estimatedLossPercent
+    ) {
     }
 }
