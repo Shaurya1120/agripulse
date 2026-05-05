@@ -101,13 +101,13 @@
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <article class="overflow-hidden rounded-[24px] border border-line bg-slate-50 shadow-sm">
-                    <img id="aboutImageOne" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg" alt="Agriculture field" class="h-48 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
+                    <img id="aboutImageOne" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg" alt="Agriculture field" class="h-48 w-full object-cover transition-all duration-700 ease-out" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
                     <div class="p-4">
                         <p id="aboutCaptionOne" class="text-sm font-semibold text-slate-700">Field intelligence</p>
                     </div>
                 </article>
                 <article class="overflow-hidden rounded-[24px] border border-line bg-slate-50 shadow-sm">
-                    <img id="aboutImageTwo" src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80" alt="Crop sourcing network" class="h-48 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-wheat.svg';">
+                    <img id="aboutImageTwo" src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80" alt="Crop sourcing network" class="h-48 w-full object-cover transition-all duration-700 ease-out" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-wheat.svg';">
                     <div class="p-4">
                         <p id="aboutCaptionTwo" class="text-sm font-semibold text-slate-700">Crop and supply planning</p>
                     </div>
@@ -211,7 +211,7 @@
                 </div>
             </article>
             <article class="overflow-hidden rounded-[30px] border border-line bg-white shadow-panel">
-                <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1200&q=80" alt="Crop field and plant health monitoring" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Oryza_sativa_of_Manipur.jpg/1280px-Oryza_sativa_of_Manipur.jpg" alt="Crop field and plant health monitoring" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
                 <div class="p-6">
                     <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Problem Visibility</p>
                     <h3 class="mt-3 text-2xl font-bold text-slate-950">Reports explain the real local problem.</h3>
@@ -885,7 +885,7 @@
     const aboutCaptionOne = document.getElementById('aboutCaptionOne');
     const aboutCaptionTwo = document.getElementById('aboutCaptionTwo');
 
-    const riskLevelPriority = { High: 3, Medium: 2, Low: 1 };
+    const riskLevelPriority = { 'Very High': 5, High: 4, Medium: 3, Low: 2, 'No Risk': 1 };
     const aboutGalleryItems = [
         {
             image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg',
@@ -900,7 +900,7 @@
             caption: 'Grain sourcing and storage'
         },
         {
-            image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1200&q=80',
+            image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Oryza_sativa_of_Manipur.jpg/1280px-Oryza_sativa_of_Manipur.jpg',
             fallback: '/images/crop-rice.svg',
             alt: 'Agriculture field operations',
             caption: 'Crop health and field visibility'
@@ -916,6 +916,36 @@
             fallback: '/images/crop-wheat.svg',
             alt: 'Agro processing facility',
             caption: 'Agro business and processing'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-wheat.svg',
+            alt: 'Crop rows in sunlight',
+            caption: 'Healthy crop growth and yield'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-rice.svg',
+            alt: 'Agricultural machinery in field',
+            caption: 'Machinery and field operations'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1461354464878-ad92f492a5a0?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-wheat.svg',
+            alt: 'Produce handling and processing',
+            caption: 'Post-harvest handling and value chain'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-rice.svg',
+            alt: 'Field inspection',
+            caption: 'Disease checks and field inspection'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=1200&q=80',
+            fallback: '/images/crop-coffee.svg',
+            alt: 'Agro business storage',
+            caption: 'Storage and rural supply infrastructure'
         }
     ];
     const inrFormatter = new Intl.NumberFormat('en-IN', {
@@ -998,6 +1028,10 @@
             return;
         }
 
+        slot.image.classList.add('opacity-0', 'scale-[0.985]');
+        slot.caption.classList.add('opacity-0');
+
+        window.setTimeout(() => {
         slot.image.src = item.image;
         slot.image.alt = item.alt;
         slot.image.onerror = () => {
@@ -1005,6 +1039,9 @@
             slot.image.src = item.fallback;
         };
         slot.caption.textContent = item.caption;
+            slot.image.classList.remove('opacity-0', 'scale-[0.985]');
+            slot.caption.classList.remove('opacity-0');
+        }, 240);
     }
 
     function initializeAboutGallery() {
@@ -1021,8 +1058,10 @@
             galleryIndex = (galleryIndex + 1) % aboutGalleryItems.length;
         };
 
+        aboutCaptionOne.classList.add('transition-opacity', 'duration-700');
+        aboutCaptionTwo.classList.add('transition-opacity', 'duration-700');
         renderGallery();
-        window.setInterval(renderGallery, 3200);
+        window.setInterval(renderGallery, 4200);
     }
 
     function showError(message) {
@@ -1036,23 +1075,35 @@
     }
 
     function badgeClassesForRisk(riskLevel) {
+        if (riskLevel === 'Very High') {
+            return 'bg-red-100 text-red-800 border border-red-200';
+        }
         if (riskLevel === 'High') {
             return 'bg-rose-50 text-rose-700 border border-rose-200';
         }
         if (riskLevel === 'Medium') {
             return 'bg-amber-50 text-amber-700 border border-amber-200';
         }
+        if (riskLevel === 'Low') {
+            return 'bg-lime-50 text-lime-700 border border-lime-200';
+        }
         return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
     }
 
     function riskNarrative(riskLevel, primaryThreatValue) {
+        if (riskLevel === 'Very High') {
+            return `Very high disruption probability detected. The leading issue is ${primaryThreatValue || 'a severe active threat'}, so emergency sourcing, route changes, and financial protection should start immediately.`;
+        }
         if (riskLevel === 'High') {
             return `High disruption probability detected. The leading issue is ${primaryThreatValue || 'a severe regional threat'}, so mitigation should start immediately with contingency actions and financial protection.`;
         }
         if (riskLevel === 'Medium') {
             return `Moderate disruption probability detected. The main pressure is ${primaryThreatValue || 'a rising operational threat'}, so teams should prepare buffers before the situation gets worse.`;
         }
-        return `Current disruption pressure is relatively manageable. The main concern remains ${primaryThreatValue || 'general market or climate variability'}, so monitoring and light safeguards are appropriate.`;
+        if (riskLevel === 'Low') {
+            return `Low disruption pressure detected. The main concern is ${primaryThreatValue || 'light operational variability'}, so simple monitoring and routine safeguards are enough for now.`;
+        }
+        return `No meaningful current disruption signal was identified. The location appears relatively stable right now, so monitoring is enough unless conditions change.`;
     }
 
     function showChartFallback(id, message) {
@@ -1225,7 +1276,7 @@
         }
 
         const trackedRegions = new Set(safeItems.map(item => item.region)).size;
-        const highRiskCount = safeItems.filter(item => item.riskLevel === 'High').length;
+        const highRiskCount = safeItems.filter(item => item.riskLevel === 'High' || item.riskLevel === 'Very High').length;
         const latestIndex = priceSeries.length ? priceSeries[priceSeries.length - 1].value : 0;
 
         trackedRegionsMetric.textContent = trackedRegions;
@@ -1367,7 +1418,7 @@
             weatherSummary.textContent = 'Enter a district, city, or state to pull weather.';
             weatherTemperature.textContent = '--';
             weatherWind.textContent = 'Wind and humidity will appear here.';
-            return;
+            return null;
         }
 
         weatherRegion.textContent = region;
@@ -1391,9 +1442,11 @@
             weatherSummary.textContent = 'Live weather for the exact location match.';
             weatherTemperature.textContent = `${Math.round(current.temperature_2m)} C`;
             weatherWind.textContent = `Wind ${Math.round(current.wind_speed_10m)} km/h | code ${current.weather_code}`;
+            return `${weatherRegion.textContent} | ${weatherTemperature.textContent} | ${weatherWind.textContent}`;
         } catch (error) {
             weatherSummary.textContent = error.message || 'Weather data is unavailable right now.';
             weatherWind.textContent = 'Try a more specific district, city, or state name.';
+            return `${region} | weather unavailable`;
         }
     }
 
@@ -1431,6 +1484,7 @@
         setLoadingState(payload.stakeholderType, true);
 
         try {
+            payload.weatherContext = await fetchWeather(payload.region);
             const response = await fetch('/api/risk/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1444,7 +1498,6 @@
 
             updateLatestResult(data, payload);
             await loadHistory(0);
-            fetchWeather(payload.region).catch(() => {});
         } catch (error) {
             showError(error.message);
         } finally {

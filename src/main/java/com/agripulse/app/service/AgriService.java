@@ -36,11 +36,11 @@ public class AgriService {
             You are an Agri-Business Expert.
             Analyze the supply chain risk for the given crop and location.
             Return a Risk Level, a detailed disruption explanation, and a Plan B strategy.
-            If the risk level is High, call the sendEmergencyAlert tool before finalizing your answer.
-            Keep the risk level limited to one of these values only: Low, Medium, High.
+            If the risk level is High or Very High, call the sendEmergencyAlert tool before finalizing your answer.
+            Keep the risk level limited to one of these values only: No Risk, Low, Medium, High, Very High.
             The only tool you are allowed to call is sendEmergencyAlert.
             Never call any tool named analyzeSupplyChainRisk or any other tool name.
-            Do not invent tools. If risk is not High, do not call any tool.
+            Do not invent tools. If risk is not High or Very High, do not call any tool.
             Include practical detail about real disruption causes such as crop disease, heat wave, excess rainfall,
             flood risk, transport bottlenecks, market price swings, storage stress, and policy/export shocks when relevant.
             Tailor the answer to either an enterprise buyer or a farmer-producer based on stakeholderType.
@@ -52,6 +52,10 @@ public class AgriService {
             Give stronger, specific alternatives when possible such as cheaper nearby sourcing belts, substitute states,
             backup procurement zones, mandi clusters, or lower-risk logistics corridors that make business sense.
             For farmer reports, also provide a Hindi version of the key explanation and action plan.
+            Be conservative with risk scoring.
+            If there is no strong current disruption signal from the location and weather context, return No Risk.
+            Use Low only for mild pressure, Medium for meaningful but manageable pressure, High for serious disruption,
+            and Very High only for severe active disruption.
             """;
 
     private final ChatClient agriChatClient;
@@ -73,8 +77,9 @@ public class AgriService {
                             Crop Rate INR per Kg: {cropRatePerKgInr}
                             Farm Area Acres: {farmAreaAcres}
                             Planning Horizon Days: {planningHorizonDays}
+                            Live Weather Context: {weatherContext}
 
-                            Analyze the agricultural supply chain risk for this crop and exact location.
+                            Analyze the current agricultural supply chain risk for this crop and exact location.
                             Return a detailed, structured answer with:
                             - riskLevel
                             - disruptionSummary
@@ -98,7 +103,8 @@ public class AgriService {
                             Clearly describe the actual local problem in that place.
                             For enterpriseActions, mention stronger practical sourcing or route actions with example
                             locations or cheaper fallback areas whenever possible instead of vague advice.
-                            If the risk is High, call the sendEmergencyAlert tool using the same cropName, region,
+                            Use No Risk if no meaningful current disruption is visible.
+                            If the risk is High or Very High, call the sendEmergencyAlert tool using the same cropName, region,
                             riskLevel, and mitigationStrategy before you complete the response.
                             Do not call analyzeSupplyChainRisk. That is not a real tool.
                             Return only the structured risk result for this request.
@@ -109,7 +115,8 @@ public class AgriService {
                             .param("quantityTonnes", safeNumber(request.getQuantityTonnes()))
                             .param("cropRatePerKgInr", safeNumber(request.getCropRatePerKgInr()))
                             .param("farmAreaAcres", safeNumber(request.getFarmAreaAcres()))
-                            .param("planningHorizonDays", request.getPlanningHorizonDays() == null ? "Not provided" : request.getPlanningHorizonDays()))
+                            .param("planningHorizonDays", request.getPlanningHorizonDays() == null ? "Not provided" : request.getPlanningHorizonDays())
+                            .param("weatherContext", StringUtils.hasText(request.getWeatherContext()) ? request.getWeatherContext() : "Not provided"))
                     .call()
                     .entity(AiRiskAssessment.class);
 
@@ -199,9 +206,11 @@ public class AgriService {
         String rawRiskLevel = aiRiskAssessment.getRiskLevel().trim().toLowerCase(Locale.ROOT);
 
         return switch (rawRiskLevel) {
+            case "no risk", "no-risk", "none", "minimal", "min", "minimum", "safe" -> "No Risk";
             case "low" -> "Low";
             case "medium", "med", "moderate" -> "Medium";
             case "high", "severe", "critical" -> "High";
+            case "very high", "very-high", "extreme" -> "Very High";
             default -> throw new IllegalStateException("Unexpected risk level returned by the AI: " + aiRiskAssessment.getRiskLevel());
         };
     }
@@ -299,7 +308,7 @@ public class AgriService {
                             .max(Comparator.comparing(RiskReport::getCreatedAt))
                             .orElseThrow();
                     long highRiskCount = entry.getValue().stream()
-                            .filter(report -> "High".equalsIgnoreCase(report.getRiskLevel()))
+                            .filter(report -> "High".equalsIgnoreCase(report.getRiskLevel()) || "Very High".equalsIgnoreCase(report.getRiskLevel()))
                             .count();
 
                     return new RiskMapPoint(

@@ -44,4 +44,7 @@ public class RiskAnalysisRequest {
 
     @Positive(message = "planningHorizonDays must be greater than 0 when provided.")
     private Integer planningHorizonDays;
+
+    @Size(max = 300, message = "weatherContext must be 300 characters or fewer.")
+    private String weatherContext;
 }
