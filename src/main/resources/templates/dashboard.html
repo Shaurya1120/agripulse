@@ -189,7 +189,7 @@
                 </div>
             </article>
             <article class="overflow-hidden rounded-[30px] border border-line bg-white shadow-panel">
-                <img src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1200&q=80" alt="Professional agricultural producer" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-coffee.svg';">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg" alt="Rice cultivation landscape" class="h-52 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
                 <div class="p-6">
                     <p class="text-xs font-semibold uppercase tracking-[0.22em] text-warning">Farmer Use Case</p>
                     <h3 class="mt-3 text-2xl font-bold text-slate-950">Farmers and producers can plan protection and recovery.</h3>
@@ -308,8 +308,69 @@
         </section>
 
         <section id="farmerDesk" class="mt-10 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+            <section id="enterpriseResultCard" class="rounded-[32px] border border-emerald-100 bg-white p-6 shadow-panel xl:col-span-2">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div class="max-w-3xl">
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Enterprise Result</p>
+                        <h3 id="enterpriseResultTitle" class="mt-2 text-3xl font-bold text-slate-950">Run enterprise analysis to generate a buyer report</h3>
+                        <p id="enterpriseResultSubtitle" class="mt-2 text-sm leading-7 text-slate-500">This enterprise result explains disruption, cost pressure, concrete sourcing actions, and business response.</p>
+                    </div>
+                    <span id="enterpriseRiskBadge" class="inline-flex rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">No result yet</span>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-2">
+                    <div class="rounded-3xl border border-line bg-slate-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Enterprise Summary</p>
+                        <p id="enterpriseDisruptionSummary" class="mt-3 text-sm leading-7 text-slate-700">Enterprise disruption notes will appear here after analysis.</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-slate-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Actual Local Problem</p>
+                        <p id="enterprisePrimaryThreat" class="mt-3 text-lg font-bold text-slate-950">No threat identified yet</p>
+                        <p id="enterpriseDetailedProblem" class="mt-3 text-sm leading-7 text-slate-700">The actual local disruption will appear here.</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-3">
+                    <div class="rounded-3xl border border-line bg-agriSoft p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Supply Impact</p>
+                        <p id="enterpriseSupplyImpactValue" class="mt-3 text-3xl font-extrabold text-slate-950">--</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-skySoft p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Price Pressure</p>
+                        <p id="enterprisePriceImpactValue" class="mt-3 text-3xl font-extrabold text-slate-950">--</p>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-amber-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-warning">Estimated Business Loss</p>
+                        <p id="enterpriseLossInr" class="mt-3 text-3xl font-extrabold text-slate-950">--</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-4 lg:grid-cols-3">
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Risk Factors</p>
+                        <ul id="enterpriseRiskFactorsList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>No analysis yet.</li>
+                        </ul>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Buyer / Exporter Actions</p>
+                        <ul id="enterpriseActionsOnlyList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>Analyze a location to populate this list.</li>
+                        </ul>
+                    </div>
+                    <div class="rounded-3xl border border-line bg-white p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-dataBlue">Plan B Strategy</p>
+                        <p id="enterpriseMitigationStrategy" class="mt-3 text-sm leading-7 text-slate-700">The enterprise mitigation plan will appear here.</p>
+                        <div class="mt-4 rounded-2xl border border-line bg-slate-50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Executive Note</p>
+                            <p id="enterpriseExecutiveSignal" class="mt-3 text-sm leading-7 text-slate-700">This short note will explain how urgent the enterprise response is.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <article class="overflow-hidden rounded-[32px] border border-sky-100 bg-white shadow-soft">
-                <img src="https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&w=1600&q=80" alt="Professional producer in agricultural operations" class="h-64 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-coffee.svg';">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Rice_paddy_taken_closely.jpg/1280px-Rice_paddy_taken_closely.jpg" alt="Crop producers working in a paddy field" class="h-64 w-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/crop-rice.svg';">
                 <div class="p-7">
                     <p class="text-sm font-semibold uppercase tracking-[0.28em] text-dataBlue">Farmer & Producer Desk</p>
                     <h3 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">For growers who want protection, not just a warning</h3>
@@ -361,14 +422,14 @@
                 </div>
             </article>
 
-            <section id="resultCard" class="rounded-[32px] border border-emerald-100 bg-white p-6 shadow-panel">
+            <section id="resultCard" class="rounded-[32px] border border-dataBlue/20 bg-white p-6 shadow-panel">
                 <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div class="max-w-3xl">
-                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-agri">Latest Intelligence Brief</p>
-                        <h3 id="resultTitle" class="mt-2 text-3xl font-bold text-slate-950">Run an analysis to generate a detailed brief</h3>
-                        <p id="resultSubtitle" class="mt-2 text-sm leading-7 text-slate-500">The result panel explains what is happening in the region, how serious it is, and what to do next.</p>
+                        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-dataBlue">Farmer Result</p>
+                        <h3 id="resultTitle" class="mt-2 text-3xl font-bold text-slate-950">Run farmer analysis to generate a producer brief</h3>
+                        <p id="resultSubtitle" class="mt-2 text-sm leading-7 text-slate-500">This farmer result explains the local problem, likely loss, protection steps, and the same explanation in Hindi.</p>
                     </div>
-                    <span id="riskBadge" class="inline-flex rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">No result yet</span>
+                    <span id="riskBadge" class="inline-flex rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">No farmer result yet</span>
                 </div>
 
                 <div class="mt-6 grid gap-4 lg:grid-cols-2">
@@ -414,12 +475,6 @@
                         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Risk Factors</p>
                         <ul id="riskFactorsList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
                             <li>No analysis yet.</li>
-                        </ul>
-                    </div>
-                    <div class="rounded-3xl border border-line bg-white p-5">
-                        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-agri">Enterprise Actions</p>
-                        <ul id="enterpriseActionsList" class="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-                            <li>Analyze a region to populate this list.</li>
                         </ul>
                     </div>
                     <div class="rounded-3xl border border-line bg-white p-5">
@@ -658,8 +713,9 @@
                 <p class="text-sm text-slate-400">Tip: sort the table to compare crops and mitigation patterns side by side.</p>
             </div>
         </section>
-        <footer class="mt-10 pb-6 text-center text-sm text-slate-500">
-            Developed by Shaurya Rathi
+        <footer class="mt-10 rounded-[28px] border border-line bg-white px-6 py-8 text-center shadow-panel">
+            <p class="text-3xl font-extrabold tracking-tight text-slate-950">Developed by Shaurya Rathi</p>
+            <p class="mt-3 text-sm leading-7 text-slate-500">Copyright © AgriPulse. All rights reserved. Product interface, reports, workflows, and branded experience are protected for owner use.</p>
         </footer>
     </main>
 </div>
@@ -745,13 +801,25 @@
     const currentLossInr = document.getElementById('currentLossInr');
     const currentStakeholder = document.getElementById('currentStakeholder');
     const riskFactorsList = document.getElementById('riskFactorsList');
-    const enterpriseActionsList = document.getElementById('enterpriseActionsList');
     const farmerActionsList = document.getElementById('farmerActionsList');
     const governmentSchemesList = document.getElementById('governmentSchemesList');
     const farmerHindiSummary = document.getElementById('farmerHindiSummary');
     const farmerHindiProblem = document.getElementById('farmerHindiProblem');
     const farmerHindiActionsList = document.getElementById('farmerHindiActionsList');
     const farmerHindiSchemesList = document.getElementById('farmerHindiSchemesList');
+    const enterpriseResultTitle = document.getElementById('enterpriseResultTitle');
+    const enterpriseResultSubtitle = document.getElementById('enterpriseResultSubtitle');
+    const enterpriseRiskBadge = document.getElementById('enterpriseRiskBadge');
+    const enterpriseDisruptionSummary = document.getElementById('enterpriseDisruptionSummary');
+    const enterprisePrimaryThreat = document.getElementById('enterprisePrimaryThreat');
+    const enterpriseDetailedProblem = document.getElementById('enterpriseDetailedProblem');
+    const enterpriseSupplyImpactValue = document.getElementById('enterpriseSupplyImpactValue');
+    const enterprisePriceImpactValue = document.getElementById('enterprisePriceImpactValue');
+    const enterpriseLossInr = document.getElementById('enterpriseLossInr');
+    const enterpriseRiskFactorsList = document.getElementById('enterpriseRiskFactorsList');
+    const enterpriseActionsOnlyList = document.getElementById('enterpriseActionsOnlyList');
+    const enterpriseMitigationStrategy = document.getElementById('enterpriseMitigationStrategy');
+    const enterpriseExecutiveSignal = document.getElementById('enterpriseExecutiveSignal');
 
     const weatherRegion = document.getElementById('weatherRegion');
     const weatherSummary = document.getElementById('weatherSummary');
@@ -1136,12 +1204,27 @@
         });
     }
 
-    function updateLatestResult(data, payload) {
+    function updateEnterpriseResult(data) {
+        enterpriseResultTitle.textContent = `${data.cropName} in ${data.region}`;
+        enterpriseResultSubtitle.textContent = 'This enterprise result explains the local disruption, likely commercial pressure, and the buyer response plan.';
+        enterpriseRiskBadge.textContent = data.riskLevel;
+        enterpriseRiskBadge.className = `inline-flex rounded-full px-4 py-2 text-sm font-semibold ${badgeClassesForRisk(data.riskLevel)}`;
+        enterpriseDisruptionSummary.textContent = data.disruptionSummary || 'No disruption summary returned.';
+        enterprisePrimaryThreat.textContent = data.primaryThreat || 'No threat identified';
+        enterpriseDetailedProblem.textContent = data.detailedProblem || 'No detailed problem explanation returned.';
+        enterpriseSupplyImpactValue.textContent = data.expectedSupplyImpactPercent != null ? `${data.expectedSupplyImpactPercent}%` : '--';
+        enterprisePriceImpactValue.textContent = data.expectedPriceIncreasePercent != null ? `${data.expectedPriceIncreasePercent}%` : '--';
+        enterpriseLossInr.textContent = formatCurrency(data.estimatedLossInr);
+        enterpriseMitigationStrategy.textContent = data.mitigationStrategy || 'No mitigation strategy returned.';
+        enterpriseExecutiveSignal.textContent = riskNarrative(data.riskLevel, data.primaryThreat);
+        renderList(enterpriseRiskFactorsList, data.riskFactors, 'No risk factors returned.');
+        renderList(enterpriseActionsOnlyList, data.enterpriseActions, 'No enterprise actions returned.');
+    }
+
+    function updateFarmerResult(data, payload) {
         latestReportContext = { response: data, request: payload };
         resultTitle.textContent = `${data.cropName} in ${data.region}`;
-        resultSubtitle.textContent = data.stakeholderType === 'Farmer'
-                ? 'This producer-focused brief explains the likely threat, possible income loss, and practical farm-side actions.'
-                : 'This enterprise-focused brief explains the likely disruption, estimated commercial pressure, and immediate plan B strategy.';
+        resultSubtitle.textContent = 'This farmer result explains the local problem, likely income loss, protection steps, and the same explanation in Hindi.';
         riskBadge.textContent = data.riskLevel;
         riskBadge.className = `inline-flex rounded-full px-4 py-2 text-sm font-semibold ${badgeClassesForRisk(data.riskLevel)}`;
 
@@ -1157,13 +1240,23 @@
         currentStakeholder.textContent = data.stakeholderType || 'Enterprise';
 
         renderList(riskFactorsList, data.riskFactors, 'No risk factors returned.');
-        renderList(enterpriseActionsList, data.enterpriseActions, 'No enterprise actions returned.');
         renderList(farmerActionsList, data.farmerActions, 'No farmer actions returned.');
         renderList(governmentSchemesList, data.governmentSchemes, 'No scheme note returned.');
         farmerHindiSummary.textContent = data.hindiDisruptionSummary || data.disruptionSummary || 'हिंदी सारांश उपलब्ध नहीं है।';
         farmerHindiProblem.textContent = data.hindiDetailedProblem || data.detailedProblem || 'हिंदी समस्या विवरण उपलब्ध नहीं है।';
         renderList(farmerHindiActionsList, data.hindiFarmerActions, 'हिंदी कार्ययोजना उपलब्ध नहीं है।');
         renderList(farmerHindiSchemesList, data.hindiGovernmentSchemes, 'हिंदी योजना जानकारी उपलब्ध नहीं है।');
+    }
+
+    function updateLatestResult(data, payload) {
+        latestReportContext = { response: data, request: payload };
+        if ((data.stakeholderType || '').toLowerCase() === 'farmer') {
+            updateFarmerResult(data, payload);
+            return;
+        }
+        updateEnterpriseResult(data);
+        currentLossInr.textContent = formatCurrency(data.estimatedLossInr);
+        currentStakeholder.textContent = data.stakeholderType || 'Enterprise';
     }
 
     async function fetchWeather(region) {
