@@ -36,6 +36,13 @@ public class UserAccountService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 
+    public boolean existsByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        return userAccountRepository.existsByEmailIgnoreCase(email.trim().toLowerCase());
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserAccount userAccount = getRequiredUser(username);

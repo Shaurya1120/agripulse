@@ -40,6 +40,9 @@
             <div th:if="${param.error}" class="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                 Incorrect email or password.
             </div>
+            <div th:if="${param.missingAccount}" class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                This email does not exist yet. Register first to create your AgriPulse account.
+            </div>
             <div th:if="${param.logout}" class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                 You have been logged out.
             </div>

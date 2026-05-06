@@ -72,6 +72,22 @@ public class MandiPriceService {
         }
 
         if (bestRecords.isEmpty()) {
+            bestRecords = queryAnyCommodityWithBestScope(regionParts).stream()
+                    .filter(record -> commodityLooksRelevant(record, commodityAliases))
+                    .sorted(Comparator
+                            .comparing((MandiRecord record) -> commodityMatchScore(record, commodityAliases))
+                            .thenComparing(record -> locationScore(record, regionParts))
+                            .thenComparing(record -> parseDate(record.arrivalDate()), Comparator.nullsLast(Comparator.reverseOrder())))
+                    .toList();
+
+            if (!bestRecords.isEmpty()) {
+                commodityUsed = StringUtils.hasText(bestRecords.get(0).commodity())
+                        ? bestRecords.get(0).commodity().trim()
+                        : titleCaseCrop(cropName);
+            }
+        }
+
+        if (bestRecords.isEmpty()) {
             return MarketEvidence.unavailable();
         }
 
@@ -180,6 +196,31 @@ public class MandiPriceService {
         return queryRecords(commodity, null, null);
     }
 
+    private List<MandiRecord> queryAnyCommodityWithBestScope(RegionParts regionParts) {
+        if (StringUtils.hasText(regionParts.state()) && StringUtils.hasText(regionParts.district())) {
+            List<MandiRecord> districtRecords = queryRecords(null, regionParts.state(), regionParts.district());
+            if (!districtRecords.isEmpty()) {
+                return districtRecords;
+            }
+        }
+
+        if (StringUtils.hasText(regionParts.state())) {
+            List<MandiRecord> stateRecords = queryRecords(null, regionParts.state(), null);
+            if (!stateRecords.isEmpty()) {
+                return stateRecords;
+            }
+        }
+
+        if (StringUtils.hasText(regionParts.district())) {
+            List<MandiRecord> districtOnlyRecords = queryRecords(null, null, regionParts.district());
+            if (!districtOnlyRecords.isEmpty()) {
+                return districtOnlyRecords;
+            }
+        }
+
+        return queryRecords(null, null, null);
+    }
+
     private List<MandiRecord> queryRecords(String commodity, String state, String district) {
         try {
             MandiApiResponse response = restClient.get()
@@ -187,8 +228,11 @@ public class MandiPriceService {
                         uriBuilder.path("/resource/{resourceId}")
                                 .queryParam("api-key", apiKey)
                                 .queryParam("format", "json")
-                                .queryParam("limit", 25)
-                                .queryParam("filters[commodity]", commodity);
+                                .queryParam("limit", 25);
+
+                        if (StringUtils.hasText(commodity)) {
+                            uriBuilder.queryParam("filters[commodity]", commodity);
+                        }
 
                         if (StringUtils.hasText(state)) {
                             uriBuilder.queryParam("filters[state]", state);
@@ -208,6 +252,40 @@ public class MandiPriceService {
                     commodity, state, district, exception.getMessage());
             return List.of();
         }
+    }
+
+    private boolean commodityLooksRelevant(MandiRecord record, List<String> aliases) {
+        return commodityMatchScore(record, aliases) > 0;
+    }
+
+    private int commodityMatchScore(MandiRecord record, List<String> aliases) {
+        String combined = String.join(" ",
+                        StringUtils.hasText(record.commodity()) ? record.commodity().trim() : "",
+                        StringUtils.hasText(record.variety()) ? record.variety().trim() : "")
+                .toLowerCase(Locale.ROOT);
+        if (combined.isBlank()) {
+            return 0;
+        }
+
+        int score = 0;
+        for (String alias : aliases) {
+            String normalizedAlias = alias.toLowerCase(Locale.ROOT).trim();
+            if (normalizedAlias.isBlank()) {
+                continue;
+            }
+            if (combined.equals(normalizedAlias)) {
+                score = Math.max(score, 6);
+            } else if (combined.contains(normalizedAlias)) {
+                score = Math.max(score, 5);
+            } else {
+                for (String token : normalizedAlias.split("\\s+")) {
+                    if (token.length() >= 3 && combined.contains(token)) {
+                        score = Math.max(score, 2);
+                    }
+                }
+            }
+        }
+        return score;
     }
 
     private List<String> commodityAliases(String cropName) {
