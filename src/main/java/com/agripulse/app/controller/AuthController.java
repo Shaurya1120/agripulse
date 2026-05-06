@@ -38,6 +38,7 @@ public class AuthController {
             BindingResult bindingResult,
             Model model) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("showRegister", true);
             return "login";
         }
 
@@ -45,6 +46,7 @@ public class AuthController {
             userAccountService.register(registrationRequest);
         } catch (IllegalArgumentException exception) {
             bindingResult.rejectValue("email", "duplicate", exception.getMessage());
+            model.addAttribute("showRegister", true);
             return "login";
         }
 

@@ -2,6 +2,7 @@ package com.agripulse.app.controller;
 
 import com.agripulse.app.dto.RiskAnalysisRequest;
 import com.agripulse.app.dto.RiskAnalysisResponse;
+import com.agripulse.app.dto.RiskReferenceResponse;
 import com.agripulse.app.service.AgriService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,14 @@ public class AgriController {
             @AuthenticationPrincipal UserDetails userDetails) {
 
         return ResponseEntity.ok(agriService.analyzeRisk(request, userDetails.getUsername()));
+    }
+
+    @GetMapping("/reference")
+    public ResponseEntity<RiskReferenceResponse> getReferenceData(
+            @RequestParam String cropName,
+            @RequestParam String region,
+            @RequestParam(defaultValue = "Enterprise") String stakeholderType) {
+        return ResponseEntity.ok(agriService.getReferenceData(cropName, region, stakeholderType));
     }
 
     @GetMapping("/history")

@@ -4,6 +4,7 @@ import com.agripulse.app.dto.AiRiskAssessment;
 import com.agripulse.app.dto.HistoryPageResponse;
 import com.agripulse.app.dto.RiskAnalysisRequest;
 import com.agripulse.app.dto.RiskAnalysisResponse;
+import com.agripulse.app.dto.RiskReferenceResponse;
 import com.agripulse.app.dto.RiskMapPoint;
 import com.agripulse.app.dto.UiDashboardData;
 import com.agripulse.app.model.RiskReport;
@@ -85,6 +86,9 @@ public class AgriService {
                     request.getCropRatePerKgInr(),
                     stakeholderType
             );
+            BigDecimal effectiveCropRate = marketEvidence.available() && marketEvidence.modalPricePerKgInr() != null
+                    ? marketEvidence.modalPricePerKgInr()
+                    : request.getCropRatePerKgInr();
 
             AiRiskAssessment aiRiskAssessment = agriChatClient.prompt()
                     .system(SYSTEM_PROMPT)
@@ -141,7 +145,7 @@ public class AgriService {
                             .param("region", request.getRegion())
                             .param("stakeholderType", stakeholderType)
                             .param("quantityTonnes", safeNumber(request.getQuantityTonnes()))
-                            .param("cropRatePerKgInr", safeNumber(request.getCropRatePerKgInr()))
+                            .param("cropRatePerKgInr", safeNumber(effectiveCropRate))
                             .param("farmAreaAcres", safeNumber(request.getFarmAreaAcres()))
                             .param("planningHorizonDays", request.getPlanningHorizonDays() == null ? "Not provided" : request.getPlanningHorizonDays())
                             .param("weatherContext", StringUtils.hasText(resolvedWeatherContext) ? resolvedWeatherContext : "Not provided")
@@ -202,7 +206,7 @@ public class AgriService {
                     chooseExpectedPriceIncrease(aiRiskAssessment, weatherEvidence, marketEvidence),
                     chooseEstimatedLossPercent(aiRiskAssessment, weatherEvidence, marketEvidence),
                     request.getQuantityTonnes(),
-                    request.getCropRatePerKgInr(),
+                    effectiveCropRate,
                     request.getFarmAreaAcres(),
                     request.getPlanningHorizonDays(),
                     recalculateLossFromEvidence(request, aiRiskAssessment, weatherEvidence, marketEvidence),
@@ -886,11 +890,15 @@ public class AgriService {
     }
 
     private String normalizeStakeholderType(RiskAnalysisRequest request) {
-        if (request == null || !StringUtils.hasText(request.getStakeholderType())) {
+        return normalizeStakeholderType(request == null ? null : request.getStakeholderType());
+    }
+
+    private String normalizeStakeholderType(String stakeholderType) {
+        if (!StringUtils.hasText(stakeholderType)) {
             return "Enterprise";
         }
 
-        String normalized = request.getStakeholderType().trim().toLowerCase(Locale.ROOT);
+        String normalized = stakeholderType.trim().toLowerCase(Locale.ROOT);
         return switch (normalized) {
             case "farmer", "producer" -> "Farmer";
             default -> "Enterprise";
@@ -940,6 +948,29 @@ public class AgriService {
                 .multiply(request.getCropRatePerKgInr())
                 .multiply(BigDecimal.valueOf(lossPercent))
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    }
+
+    public RiskReferenceResponse getReferenceData(String cropName, String region, String stakeholderType) {
+        String normalizedStakeholderType = normalizeStakeholderType(stakeholderType);
+        String resolvedWeatherContext = weatherLookupService.resolveWeatherContext(region, null);
+        MandiPriceService.MarketEvidence marketEvidence = mandiPriceService.findMarketEvidence(
+                cropName,
+                region,
+                null,
+                normalizedStakeholderType
+        );
+
+        return new RiskReferenceResponse(
+                cropName,
+                region,
+                normalizedStakeholderType,
+                resolvedWeatherContext,
+                StringUtils.hasText(resolvedWeatherContext) && !resolvedWeatherContext.toLowerCase(Locale.ROOT).contains("weather unavailable"),
+                marketEvidence.modalPricePerKgInr(),
+                marketEvidence.locationUsed(),
+                marketEvidence.sourceLabel(),
+                marketEvidence.summary()
+        );
     }
 
     public HistoryPageResponse getHistoryPage(String userEmail, int page, int size) {

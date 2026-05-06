@@ -30,6 +30,14 @@ public class MandiPriceService {
     // This resource id is the official "Current Daily Price of Various Commodities from Various Markets (Mandi)" dataset.
     private static final String DEFAULT_RESOURCE_ID = "9ef84268-d588-465a-a308-a864a43d0070";
     private static final DateTimeFormatter DAY_MONTH_YEAR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final List<String> INDIAN_REGIONS = List.of(
+            "andaman and nicobar islands", "arunachal pradesh", "andhra pradesh", "assam",
+            "bihar", "chandigarh", "chhattisgarh", "dadra and nagar haveli and daman and diu",
+            "delhi", "goa", "gujarat", "haryana", "himachal pradesh", "jammu and kashmir",
+            "jharkhand", "karnataka", "kerala", "ladakh", "lakshadweep", "madhya pradesh",
+            "maharashtra", "manipur", "meghalaya", "mizoram", "nagaland", "odisha",
+            "puducherry", "punjab", "rajasthan", "sikkim", "tamil nadu", "telangana",
+            "tripura", "uttar pradesh", "uttarakhand", "west bengal");
 
     private final RestClient restClient;
     private final String apiKey;
@@ -148,15 +156,24 @@ public class MandiPriceService {
     }
 
     private List<MandiRecord> queryWithBestScope(String commodity, RegionParts regionParts) {
-        List<MandiRecord> districtRecords = queryRecords(commodity, regionParts.state(), regionParts.district());
-        if (!districtRecords.isEmpty()) {
-            return districtRecords;
+        if (StringUtils.hasText(regionParts.state()) && StringUtils.hasText(regionParts.district())) {
+            List<MandiRecord> districtRecords = queryRecords(commodity, regionParts.state(), regionParts.district());
+            if (!districtRecords.isEmpty()) {
+                return districtRecords;
+            }
         }
 
         if (StringUtils.hasText(regionParts.state())) {
             List<MandiRecord> stateRecords = queryRecords(commodity, regionParts.state(), null);
             if (!stateRecords.isEmpty()) {
                 return stateRecords;
+            }
+        }
+
+        if (StringUtils.hasText(regionParts.district())) {
+            List<MandiRecord> districtOnlyRecords = queryRecords(commodity, null, regionParts.district());
+            if (!districtOnlyRecords.isEmpty()) {
+                return districtOnlyRecords;
             }
         }
 
@@ -170,7 +187,7 @@ public class MandiPriceService {
                         uriBuilder.path("/resource/{resourceId}")
                                 .queryParam("api-key", apiKey)
                                 .queryParam("format", "json")
-                                .queryParam("limit", 15)
+                                .queryParam("limit", 25)
                                 .queryParam("filters[commodity]", commodity);
 
                         if (StringUtils.hasText(state)) {
@@ -230,6 +247,13 @@ public class MandiPriceService {
 
     private String titleCaseCrop(String cropName) {
         return Arrays.stream(cropName.trim().split("\\s+"))
+                .map(token -> token.substring(0, 1).toUpperCase(Locale.ROOT) + token.substring(1).toLowerCase(Locale.ROOT))
+                .collect(java.util.stream.Collectors.joining(" "));
+    }
+
+    private static String titleCaseWords(String value) {
+        return Arrays.stream(value.trim().split("\\s+"))
+                .filter(StringUtils::hasText)
                 .map(token -> token.substring(0, 1).toUpperCase(Locale.ROOT) + token.substring(1).toLowerCase(Locale.ROOT))
                 .collect(java.util.stream.Collectors.joining(" "));
     }
@@ -345,12 +369,29 @@ public class MandiPriceService {
                 return new RegionParts(null, null);
             }
 
-            String[] parts = region.split(",");
+            String cleaned = region.trim().replaceAll("\\s+", " ");
+            String[] parts = cleaned.split(",");
             if (parts.length >= 2) {
-                return new RegionParts(parts[0].trim(), parts[parts.length - 1].trim());
+                return new RegionParts(titleCaseWords(parts[0].trim()), titleCaseWords(parts[parts.length - 1].trim()));
             }
 
-            return new RegionParts(region.trim(), region.trim());
+            String normalized = cleaned.toLowerCase(Locale.ROOT);
+            for (String indianRegion : INDIAN_REGIONS.stream()
+                    .sorted(Comparator.comparingInt(String::length).reversed())
+                    .toList()) {
+                if (normalized.equals(indianRegion)) {
+                    return new RegionParts(null, titleCaseWords(indianRegion));
+                }
+                if (normalized.endsWith(indianRegion)) {
+                    String prefix = cleaned.substring(0, cleaned.length() - indianRegion.length()).trim().replaceAll("[, ]+$", "");
+                    return new RegionParts(
+                            StringUtils.hasText(prefix) ? titleCaseWords(prefix) : null,
+                            titleCaseWords(indianRegion)
+                    );
+                }
+            }
+
+            return new RegionParts(titleCaseWords(cleaned), null);
         }
     }
 

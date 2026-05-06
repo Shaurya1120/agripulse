@@ -264,7 +264,7 @@
                         <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
                             <p class="mb-2 text-sm font-semibold text-slate-900">Current crop rate</p>
                             <input id="enterpriseCropRatePerKgInr" type="number" min="0" step="0.1" placeholder="72" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-agri focus:bg-white focus:ring-4 focus:ring-emerald-100">
-                            <p class="mt-2 text-xs text-slate-500">INR per kg.</p>
+                            <p id="enterpriseRateHint" class="mt-2 text-xs text-slate-500">INR per kg. AgriPulse will try to fill this from official mandi data.</p>
                         </label>
                         <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
                             <p class="mb-2 text-sm font-semibold text-slate-900">Planning horizon</p>
@@ -429,7 +429,7 @@
                             <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
                                 <p class="mb-2 text-sm font-semibold text-slate-900">Current selling rate</p>
                                 <input id="farmerCropRatePerKgInr" type="number" min="0" step="0.1" placeholder="68" class="w-full rounded-2xl border border-line bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-dataBlue focus:bg-white focus:ring-4 focus:ring-sky-100">
-                                <p class="mt-2 text-xs text-slate-500">INR per kg.</p>
+                                <p id="farmerRateHint" class="mt-2 text-xs text-slate-500">INR per kg. AgriPulse will try to fill this from official mandi data.</p>
                             </label>
                             <label class="rounded-3xl border border-line bg-white p-4 shadow-sm">
                                 <p class="mb-2 text-sm font-semibold text-slate-900">Farm area</p>
@@ -808,6 +808,7 @@
     let currentSort = { key: 'riskLevel', direction: 'desc' };
     let latestReportContext = null;
     let activeCropPresetKey = null;
+    let referenceRefreshTimers = {};
     let priceTrendChart = null;
     let riskBreakdownChart = null;
     let riskMapChart = null;
@@ -861,6 +862,14 @@
     const weatherSummary = document.getElementById('weatherSummary');
     const weatherTemperature = document.getElementById('weatherTemperature');
     const weatherWind = document.getElementById('weatherWind');
+    const enterpriseCropNameInput = document.getElementById('enterpriseCropName');
+    const enterpriseRegionInput = document.getElementById('enterpriseRegion');
+    const enterpriseCropRateInput = document.getElementById('enterpriseCropRatePerKgInr');
+    const enterpriseRateHint = document.getElementById('enterpriseRateHint');
+    const farmerCropNameInput = document.getElementById('farmerCropName');
+    const farmerRegionInput = document.getElementById('farmerRegion');
+    const farmerCropRateInput = document.getElementById('farmerCropRatePerKgInr');
+    const farmerRateHint = document.getElementById('farmerRateHint');
 
     const trackedRegionsMetric = document.getElementById('trackedRegionsMetric');
     const highRiskMetric = document.getElementById('highRiskMetric');
@@ -1381,14 +1390,39 @@
         renderList(farmerHindiSchemesList, data.hindiGovernmentSchemes, 'हिंदी योजना जानकारी उपलब्ध नहीं है।');
     }
 
+    function normalizeFarmerHindiOutputs(data) {
+        farmerHindiSummary.textContent = data.hindiDisruptionSummary || data.disruptionSummary || 'हिंदी सारांश उपलब्ध नहीं है।';
+        farmerHindiProblem.textContent = data.hindiDetailedProblem || data.detailedProblem || 'हिंदी समस्या विवरण उपलब्ध नहीं है।';
+        renderList(farmerHindiActionsList, data.hindiFarmerActions, 'हिंदी कार्ययोजना उपलब्ध नहीं है।');
+        renderList(farmerHindiSchemesList, data.hindiGovernmentSchemes, 'हिंदी योजना जानकारी उपलब्ध नहीं है।');
+    }
+
+    function repairStaticHindiCopy() {
+        document.querySelectorAll('p').forEach(paragraph => {
+            if (paragraph.textContent.includes('à¤¯à¤¹ à¤­à¤¾à¤—')) {
+                paragraph.textContent = 'यह भाग किसानों और उत्पादकों को संभावित नुकसान, असली स्थानीय समस्या, और बचाव के आसान कदम समझाने के लिए है।';
+            }
+            if (paragraph.textContent.includes('à¤¯à¤¦à¤¿ à¤†à¤ª')) {
+                paragraph.textContent = 'यदि आप किसान या उत्पादक हैं, तो यहाँ आपको नुकसान का अनुमान, समाधान, और उपयोगी योजना जानकारी हिंदी में भी मिलेगी।';
+            }
+        });
+    }
+
     function updateLatestResult(data, payload) {
         latestReportContext = { response: data, request: payload };
         applyWeatherContext(data.verifiedWeatherContext || payload.weatherContext);
         if ((data.stakeholderType || '').toLowerCase() === 'farmer') {
             updateFarmerResult(data, payload);
+            normalizeFarmerHindiOutputs(data);
+            if (data.cropRatePerKgInr != null) {
+                farmerCropRateInput.value = Number(data.cropRatePerKgInr);
+            }
             return;
         }
         updateEnterpriseResult(data);
+        if (data.cropRatePerKgInr != null) {
+            enterpriseCropRateInput.value = Number(data.cropRatePerKgInr);
+        }
         currentLossInr.textContent = formatCurrency(data.estimatedLossInr);
         currentStakeholder.textContent = data.stakeholderType || 'Enterprise';
     }
@@ -1453,19 +1487,105 @@
         weatherSummary.textContent = 'Live weather verified for the matched location.';
     }
 
-    async function fetchWeather(region) {
-        if (!region || !region.trim()) {
-            weatherRegion.textContent = 'Waiting for a location';
-            weatherSummary.textContent = 'Enter a district, city, or state to pull weather.';
-            weatherTemperature.textContent = '--';
-            weatherWind.textContent = 'Wind and humidity will appear here.';
+    function resetWeatherCard(region) {
+        weatherRegion.textContent = region || 'Waiting for a location';
+        weatherSummary.textContent = region ? 'Looking up live weather conditions...' : 'Enter a district, city, or state to pull weather.';
+        weatherTemperature.textContent = '--';
+        weatherWind.textContent = region ? 'Forecast details loading...' : 'Wind and humidity will appear here.';
+    }
+
+    function renderRateHint(prefix, text, tone = 'neutral') {
+        const hint = prefix === 'enterprise' ? enterpriseRateHint : farmerRateHint;
+        if (!hint) {
+            return;
+        }
+
+        hint.textContent = text;
+        hint.className = `mt-2 text-xs ${
+            tone === 'success'
+                ? 'text-emerald-700'
+                : tone === 'warning'
+                    ? 'text-amber-700'
+                    : 'text-slate-500'
+        }`;
+    }
+
+    async function fetchReferenceData(cropName, region, stakeholderType) {
+        if (!cropName || !region) {
             return null;
         }
 
-        weatherRegion.textContent = region;
-        weatherSummary.textContent = 'Looking up live weather conditions...';
-        weatherTemperature.textContent = '--';
-        weatherWind.textContent = 'Forecast details loading...';
+        const params = new URLSearchParams({
+            cropName,
+            region,
+            stakeholderType
+        });
+
+        const response = await fetch(`/api/risk/reference?${params.toString()}`, {
+            headers: csrfToken && csrfHeader ? { [csrfHeader]: csrfToken } : {}
+        });
+
+        if (!response.ok) {
+            const errorPayload = await response.json().catch(() => ({}));
+            throw new Error(errorPayload.message || 'Reference data could not be loaded.');
+        }
+
+        return response.json();
+    }
+
+    function applyReferenceData(prefix, data) {
+        if (!data) {
+            return;
+        }
+
+        if (data.verifiedWeatherContext) {
+            applyWeatherContext(data.verifiedWeatherContext);
+        }
+
+        const rateInput = prefix === 'enterprise' ? enterpriseCropRateInput : farmerCropRateInput;
+        if (data.marketPricePerKgInr != null && rateInput) {
+            rateInput.value = Number(data.marketPricePerKgInr);
+            const sourceText = data.marketLocation
+                ? `Official mandi rate loaded from ${data.marketLocation}.`
+                : 'Official mandi rate loaded.';
+            renderRateHint(prefix, sourceText, 'success');
+        } else {
+            renderRateHint(prefix, 'Official mandi price not found yet for this crop and place.', 'warning');
+        }
+    }
+
+    async function refreshReferenceData(prefix, stakeholderType) {
+        const cropInput = prefix === 'enterprise' ? enterpriseCropNameInput : farmerCropNameInput;
+        const regionInput = prefix === 'enterprise' ? enterpriseRegionInput : farmerRegionInput;
+        const cropName = cropInput?.value.trim();
+        const region = regionInput?.value.trim();
+
+        if (!cropName || !region) {
+            return null;
+        }
+
+        resetWeatherCard(region);
+        const data = await fetchReferenceData(cropName, region, stakeholderType);
+        applyReferenceData(prefix, data);
+        return data;
+    }
+
+    function scheduleReferenceRefresh(prefix, stakeholderType) {
+        clearTimeout(referenceRefreshTimers[prefix]);
+        referenceRefreshTimers[prefix] = setTimeout(() => {
+            refreshReferenceData(prefix, stakeholderType).catch(() => {
+                renderRateHint(prefix, 'Official mandi price could not be loaded right now.', 'warning');
+            });
+        }, 450);
+    }
+
+    async function fetchWeather(region) {
+        if (!region || !region.trim()) {
+            resetWeatherCard('');
+            return null;
+        }
+
+        resetWeatherCard(region);
 
         try {
             for (const variant of buildLocationVariants(region)) {
@@ -1532,7 +1652,12 @@
         setLoadingState(payload.stakeholderType, true);
 
         try {
-            payload.weatherContext = await fetchWeather(payload.region);
+            const prefix = payload.stakeholderType === 'Farmer' ? 'farmer' : 'enterprise';
+            const referenceData = await refreshReferenceData(prefix, payload.stakeholderType).catch(() => null);
+            payload.weatherContext = referenceData?.verifiedWeatherContext || await fetchWeather(payload.region);
+            if (referenceData?.marketPricePerKgInr != null) {
+                payload.cropRatePerKgInr = Number(referenceData.marketPricePerKgInr);
+            }
             const headers = { 'Content-Type': 'application/json' };
             if (csrfToken && csrfHeader) {
                 headers[csrfHeader] = csrfToken;
@@ -1578,6 +1703,8 @@
         }
 
         hideError();
+        const stakeholderType = targetForm === 'farmer' ? 'Farmer' : 'Enterprise';
+        scheduleReferenceRefresh(targetForm, stakeholderType);
     }
 
     function openCropModal(key) {
@@ -1878,6 +2005,324 @@
 </html>`;
     }
 
+    function buildPrintReportHtmlV2(reportType, response, request, cropImage, priceChartImage, riskChartImage) {
+        const reportTitle = reportType === 'Farmer' ? 'AgriPulse Farmer Resilience Report' : 'AgriPulse Enterprise Risk Brief';
+        const englishActionList = reportType === 'Farmer'
+                ? toHtmlList(response.farmerActions, 'No farmer action returned.')
+                : toHtmlList(response.enterpriseActions, 'No enterprise action returned.');
+        const schemeList = toHtmlList(response.governmentSchemes, 'No scheme note returned.');
+        const hindiActionList = toHtmlList(
+                response.hindiFarmerActions?.length ? response.hindiFarmerActions : response.farmerActions,
+                'कोई किसान कार्ययोजना उपलब्ध नहीं है।'
+        );
+        const hindiSchemeList = toHtmlList(
+                response.hindiGovernmentSchemes?.length ? response.hindiGovernmentSchemes : response.governmentSchemes,
+                'कोई योजना सूचना उपलब्ध नहीं है।'
+        );
+        const lossBreakdown = [
+            request.quantityTonnes ? `Quantity: ${escapeHtml(request.quantityTonnes)} tonnes` : null,
+            request.cropRatePerKgInr ? `Crop rate: INR ${escapeHtml(request.cropRatePerKgInr)} per kg` : null,
+            request.farmAreaAcres ? `Farm area: ${escapeHtml(request.farmAreaAcres)} acres` : null,
+            request.planningHorizonDays ? `Planning horizon: ${escapeHtml(request.planningHorizonDays)} days` : null,
+            response.estimatedLossPercent != null ? `Estimated loss: ${escapeHtml(response.estimatedLossPercent)}%` : null,
+            `Estimated rupee loss: ${escapeHtml(formatCurrency(response.estimatedLossInr))}`
+        ].filter(Boolean);
+        const enterpriseGuidance = reportType === 'Enterprise'
+                ? `<div class="card">
+                        <h3>Concrete Buyer / Exporter Plan</h3>
+                        <p>${escapeHtml(response.mitigationStrategy || 'No mitigation strategy returned.')}</p>
+                        <p class="muted">These actions should be read as direct business actions. Use the named lower-risk corridors, cheaper nearby sourcing belts, or alternate procurement zones mentioned in the report before widening purchases blindly.</p>
+                    </div>`
+                : '';
+        const farmerHindiSection = reportType === 'Farmer'
+                ? `<section class="page-break">
+                        <h2>किसान रिपोर्ट - हिंदी</h2>
+                        <div class="card">
+                            <h3>समस्या का सार</h3>
+                            <p>${escapeHtml(response.hindiDisruptionSummary || response.disruptionSummary || '')}</p>
+                        </div>
+                        <div class="card">
+                            <h3>मुख्य खतरा</h3>
+                            <p>${escapeHtml(response.hindiPrimaryThreat || response.primaryThreat || '')}</p>
+                            <p>${escapeHtml(response.hindiDetailedProblem || response.detailedProblem || '')}</p>
+                        </div>
+                        <div class="card">
+                            <h3>संभावित नुकसान</h3>
+                            <p>${escapeHtml(formatCurrency(response.estimatedLossInr))}</p>
+                            <p>${escapeHtml(response.cropName)} के लिए अनुमानित प्रभाव ${escapeHtml(response.estimatedLossPercent ?? '--')}% तक हो सकता है।</p>
+                        </div>
+                        <div class="grid two">
+                            <div class="card">
+                                <h3>क्या करें</h3>
+                                ${hindiActionList}
+                            </div>
+                            <div class="card">
+                                <h3>सरकारी योजना</h3>
+                                ${hindiSchemeList}
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>योजना बी</h3>
+                            <p>${escapeHtml(response.hindiMitigationStrategy || response.mitigationStrategy || '')}</p>
+                        </div>
+                    </section>`
+                : '';
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${escapeHtml(reportTitle)} - ${escapeHtml(response.cropName)} - ${escapeHtml(response.region)}</title>
+    <style>
+        body { font-family: Arial, "Noto Sans Devanagari", "Mangal", sans-serif; color: #0f172a; margin: 0; background: #f8fafc; }
+        .page { max-width: 960px; margin: 0 auto; background: white; padding: 32px; }
+        .header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+        .title { font-size: 32px; font-weight: 800; margin: 0 0 8px; }
+        .sub { color: #475569; font-size: 14px; line-height: 1.6; }
+        .hero-img { width: 180px; height: 120px; object-fit: cover; border-radius: 18px; border: 1px solid #e2e8f0; flex-shrink: 0; }
+        .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+        .metric, .card { border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; background: #fff; }
+        .metric strong { display: block; font-size: 24px; margin-top: 8px; }
+        .grid { display: grid; gap: 16px; }
+        .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        h2 { font-size: 26px; margin: 26px 0 12px; }
+        h3 { font-size: 18px; margin: 0 0 10px; }
+        p, li { font-size: 14px; line-height: 1.7; }
+        ul { margin: 0; padding-left: 18px; }
+        .muted { color: #475569; }
+        .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+        .chart { border: 1px solid #e2e8f0; border-radius: 18px; padding: 12px; }
+        .chart img { width: 100%; border-radius: 12px; }
+        .footer { margin-top: 24px; text-align: center; color: #64748b; font-size: 12px; }
+        .page-break { page-break-before: always; margin-top: 28px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div>
+                <p class="sub" style="color:#166534;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;">AgriPulse Report</p>
+                <h1 class="title">${escapeHtml(reportTitle)}</h1>
+                <p class="sub"><strong>Crop:</strong> ${escapeHtml(response.cropName)}<br><strong>Location:</strong> ${escapeHtml(response.region)}<br><strong>Risk Level:</strong> ${escapeHtml(response.riskLevel)}<br><strong>Primary Threat:</strong> ${escapeHtml(response.primaryThreat || 'Not specified')}</p>
+                <p class="sub"><strong>Weather:</strong> ${escapeHtml(weatherRegion.textContent)} | ${escapeHtml(weatherTemperature.textContent)} | ${escapeHtml(weatherWind.textContent)}</p>
+            </div>
+            <img class="hero-img" src="${cropImage}" alt="${escapeHtml(response.cropName)}">
+        </div>
+        <div class="metrics">
+            <div class="metric"><span class="muted">Supply Impact</span><strong>${escapeHtml(response.expectedSupplyImpactPercent != null ? `${response.expectedSupplyImpactPercent}%` : '--')}</strong></div>
+            <div class="metric"><span class="muted">Price Pressure</span><strong>${escapeHtml(response.expectedPriceIncreasePercent != null ? `${response.expectedPriceIncreasePercent}%` : '--')}</strong></div>
+            <div class="metric"><span class="muted">Estimated Loss</span><strong>${escapeHtml(formatCurrency(response.estimatedLossInr))}</strong></div>
+        </div>
+        <div class="grid two">
+            <div class="card">
+                <h3>What is happening?</h3>
+                <p>${escapeHtml(response.disruptionSummary || 'No disruption summary returned.')}</p>
+            </div>
+            <div class="card">
+                <h3>Actual problem in this area</h3>
+                <p>${escapeHtml(response.detailedProblem || 'No detailed problem explanation returned.')}</p>
+            </div>
+        </div>
+        <div class="grid two" style="margin-top:16px;">
+            <div class="card">
+                <h3>Risk Factors</h3>
+                ${toHtmlList(response.riskFactors, 'No risk factor returned.')}
+            </div>
+            <div class="card">
+                <h3>${reportType === 'Farmer' ? 'Farmer Action Plan' : 'Buyer / Exporter Action Plan'}</h3>
+                ${englishActionList}
+            </div>
+        </div>
+        ${enterpriseGuidance}
+        <div class="charts">
+            <div class="chart">
+                <h3>Price Trend Chart</h3>
+                ${priceChartImage ? `<img src="${priceChartImage}" alt="Price trend chart">` : '<p class="muted">Chart not available.</p>'}
+            </div>
+            <div class="chart">
+                <h3>Risk Breakdown Chart</h3>
+                ${riskChartImage ? `<img src="${riskChartImage}" alt="Risk breakdown chart">` : '<p class="muted">Chart not available.</p>'}
+            </div>
+        </div>
+        <div class="grid two">
+            <div class="card">
+                <h3>Loss Calculation</h3>
+                ${toHtmlList(lossBreakdown, 'No loss detail available.')}
+            </div>
+            <div class="card">
+                <h3>${reportType === 'Farmer' ? 'Plan B and Protection' : 'Plan B and Sourcing Route'}</h3>
+                <p>${escapeHtml(response.mitigationStrategy || 'No mitigation strategy returned.')}</p>
+            </div>
+        </div>
+        ${reportType === 'Farmer'
+                ? `<div class="card" style="margin-top:16px;"><h3>Government Schemes</h3>${schemeList}</div>`
+                : `<div class="card" style="margin-top:16px;"><h3>Executive Note</h3><p>${escapeHtml(riskNarrative(response.riskLevel, response.primaryThreat))}</p></div>`}
+        ${farmerHindiSection}
+        <div class="footer">Developed by Shaurya Rathi</div>
+    </div>
+</body>
+</html>`;
+    }
+
+    function buildPrintReportHtmlV3(reportType, response, request, cropImage, priceChartImage, riskChartImage) {
+        const reportTitle = reportType === 'Farmer' ? 'AgriPulse Farmer Resilience Report' : 'AgriPulse Enterprise Risk Brief';
+        const englishActionList = reportType === 'Farmer'
+                ? toHtmlList(response.farmerActions, 'No farmer action returned.')
+                : toHtmlList(response.enterpriseActions, 'No enterprise action returned.');
+        const schemeList = toHtmlList(response.governmentSchemes, 'No scheme note returned.');
+        const hindiActionList = toHtmlList(
+                response.hindiFarmerActions?.length ? response.hindiFarmerActions : response.farmerActions,
+                'कोई किसान कार्ययोजना उपलब्ध नहीं है।'
+        );
+        const hindiSchemeList = toHtmlList(
+                response.hindiGovernmentSchemes?.length ? response.hindiGovernmentSchemes : response.governmentSchemes,
+                'कोई योजना सूचना उपलब्ध नहीं है।'
+        );
+        const lossBreakdown = [
+            request.quantityTonnes ? `Quantity: ${escapeHtml(request.quantityTonnes)} tonnes` : null,
+            request.cropRatePerKgInr ? `Crop rate: INR ${escapeHtml(request.cropRatePerKgInr)} per kg` : null,
+            request.farmAreaAcres ? `Farm area: ${escapeHtml(request.farmAreaAcres)} acres` : null,
+            request.planningHorizonDays ? `Planning horizon: ${escapeHtml(request.planningHorizonDays)} days` : null,
+            response.estimatedLossPercent != null ? `Estimated loss: ${escapeHtml(response.estimatedLossPercent)}%` : null,
+            `Estimated rupee loss: ${escapeHtml(formatCurrency(response.estimatedLossInr))}`
+        ].filter(Boolean);
+        const enterpriseGuidance = reportType === 'Enterprise'
+                ? `<div class="card">
+                        <h3>Concrete Buyer / Exporter Plan</h3>
+                        <p>${escapeHtml(response.mitigationStrategy || 'No mitigation strategy returned.')}</p>
+                        <p class="muted">These actions should be read as direct business actions. Use the named lower-risk corridors, cheaper nearby sourcing belts, or alternate procurement zones mentioned in the report before widening purchases blindly.</p>
+                    </div>`
+                : '';
+        const farmerHindiSection = reportType === 'Farmer'
+                ? `<section class="page-break">
+                        <h2>किसान रिपोर्ट - हिंदी</h2>
+                        <div class="card">
+                            <h3>समस्या का सार</h3>
+                            <p>${escapeHtml(response.hindiDisruptionSummary || response.disruptionSummary || 'हिंदी सारांश उपलब्ध नहीं है।')}</p>
+                        </div>
+                        <div class="card">
+                            <h3>मुख्य खतरा</h3>
+                            <p>${escapeHtml(response.hindiPrimaryThreat || response.primaryThreat || 'मुख्य खतरा उपलब्ध नहीं है।')}</p>
+                            <p>${escapeHtml(response.hindiDetailedProblem || response.detailedProblem || 'विस्तृत समस्या उपलब्ध नहीं है।')}</p>
+                        </div>
+                        <div class="card">
+                            <h3>संभावित नुकसान</h3>
+                            <p>${escapeHtml(formatCurrency(response.estimatedLossInr))}</p>
+                            <p>${escapeHtml(response.cropName)} के लिए अनुमानित प्रभाव ${escapeHtml(response.estimatedLossPercent ?? '--')}% तक हो सकता है।</p>
+                        </div>
+                        <div class="grid two">
+                            <div class="card">
+                                <h3>क्या करें</h3>
+                                ${hindiActionList}
+                            </div>
+                            <div class="card">
+                                <h3>सरकारी योजना</h3>
+                                ${hindiSchemeList}
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>योजना बी</h3>
+                            <p>${escapeHtml(response.hindiMitigationStrategy || response.mitigationStrategy || 'बचाव योजना उपलब्ध नहीं है।')}</p>
+                        </div>
+                    </section>`
+                : '';
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${escapeHtml(reportTitle)} - ${escapeHtml(response.cropName)} - ${escapeHtml(response.region)}</title>
+    <style>
+        body { font-family: Arial, "Noto Sans Devanagari", "Mangal", sans-serif; color: #0f172a; margin: 0; background: #f8fafc; }
+        .page { max-width: 960px; margin: 0 auto; background: white; padding: 32px; }
+        .header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
+        .title { font-size: 32px; font-weight: 800; margin: 0 0 8px; }
+        .sub { color: #475569; font-size: 14px; line-height: 1.6; }
+        .hero-img { width: 180px; height: 120px; object-fit: cover; border-radius: 18px; border: 1px solid #e2e8f0; flex-shrink: 0; }
+        .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+        .metric, .card { border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; background: #fff; }
+        .metric strong { display: block; font-size: 24px; margin-top: 8px; }
+        .grid { display: grid; gap: 16px; }
+        .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        h2 { font-size: 26px; margin: 26px 0 12px; }
+        h3 { font-size: 18px; margin: 0 0 10px; }
+        p, li { font-size: 14px; line-height: 1.7; }
+        ul { margin: 0; padding-left: 18px; }
+        .muted { color: #475569; }
+        .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+        .chart { border: 1px solid #e2e8f0; border-radius: 18px; padding: 12px; }
+        .chart img { width: 100%; border-radius: 12px; }
+        .footer { margin-top: 24px; text-align: center; color: #64748b; font-size: 12px; }
+        .page-break { page-break-before: always; margin-top: 28px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div>
+                <p class="sub" style="color:#166534;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;">AgriPulse Report</p>
+                <h1 class="title">${escapeHtml(reportTitle)}</h1>
+                <p class="sub"><strong>Crop:</strong> ${escapeHtml(response.cropName)}<br><strong>Location:</strong> ${escapeHtml(response.region)}<br><strong>Risk Level:</strong> ${escapeHtml(response.riskLevel)}<br><strong>Primary Threat:</strong> ${escapeHtml(response.primaryThreat || 'Not specified')}</p>
+                <p class="sub"><strong>Weather:</strong> ${escapeHtml(weatherRegion.textContent)} | ${escapeHtml(weatherTemperature.textContent)} | ${escapeHtml(weatherWind.textContent)}</p>
+            </div>
+            <img class="hero-img" src="${cropImage}" alt="${escapeHtml(response.cropName)}">
+        </div>
+        <div class="metrics">
+            <div class="metric"><span class="muted">Supply Impact</span><strong>${escapeHtml(response.expectedSupplyImpactPercent != null ? `${response.expectedSupplyImpactPercent}%` : '--')}</strong></div>
+            <div class="metric"><span class="muted">Price Pressure</span><strong>${escapeHtml(response.expectedPriceIncreasePercent != null ? `${response.expectedPriceIncreasePercent}%` : '--')}</strong></div>
+            <div class="metric"><span class="muted">Estimated Loss</span><strong>${escapeHtml(formatCurrency(response.estimatedLossInr))}</strong></div>
+        </div>
+        <div class="grid two">
+            <div class="card">
+                <h3>What is happening?</h3>
+                <p>${escapeHtml(response.disruptionSummary || 'No disruption summary returned.')}</p>
+            </div>
+            <div class="card">
+                <h3>Actual problem in this area</h3>
+                <p>${escapeHtml(response.detailedProblem || 'No detailed problem explanation returned.')}</p>
+            </div>
+        </div>
+        <div class="grid two" style="margin-top:16px;">
+            <div class="card">
+                <h3>Risk Factors</h3>
+                ${toHtmlList(response.riskFactors, 'No risk factor returned.')}
+            </div>
+            <div class="card">
+                <h3>${reportType === 'Farmer' ? 'Farmer Action Plan' : 'Buyer / Exporter Action Plan'}</h3>
+                ${englishActionList}
+            </div>
+        </div>
+        ${enterpriseGuidance}
+        <div class="charts">
+            <div class="chart">
+                <h3>Price Trend Chart</h3>
+                ${priceChartImage ? `<img src="${priceChartImage}" alt="Price trend chart">` : '<p class="muted">Chart not available.</p>'}
+            </div>
+            <div class="chart">
+                <h3>Risk Breakdown Chart</h3>
+                ${riskChartImage ? `<img src="${riskChartImage}" alt="Risk breakdown chart">` : '<p class="muted">Chart not available.</p>'}
+            </div>
+        </div>
+        <div class="grid two">
+            <div class="card">
+                <h3>Loss Calculation</h3>
+                ${toHtmlList(lossBreakdown, 'No loss detail available.')}
+            </div>
+            <div class="card">
+                <h3>${reportType === 'Farmer' ? 'Plan B and Protection' : 'Plan B and Sourcing Route'}</h3>
+                <p>${escapeHtml(response.mitigationStrategy || 'No mitigation strategy returned.')}</p>
+            </div>
+        </div>
+        ${reportType === 'Farmer'
+                ? `<div class="card" style="margin-top:16px;"><h3>Government Schemes</h3>${schemeList}</div>`
+                : `<div class="card" style="margin-top:16px;"><h3>Executive Note</h3><p>${escapeHtml(riskNarrative(response.riskLevel, response.primaryThreat))}</p></div>`}
+        ${farmerHindiSection}
+        <div class="footer">Developed by Shaurya Rathi</div>
+    </div>
+</body>
+</html>`;
+    }
+
     async function waitForImages(container) {
         const images = [...container.querySelectorAll('img')];
         await Promise.all(images.map(image => {
@@ -1893,7 +2338,7 @@
     }
 
     async function generatePdfFromRenderedHtml(reportType, response, request, cropImage, priceChartImage, riskChartImage) {
-        const html = buildPrintReportHtml(reportType, response, request, cropImage, priceChartImage, riskChartImage);
+        const html = buildPrintReportHtmlV3(reportType, response, request, cropImage, priceChartImage, riskChartImage);
         const parser = new DOMParser();
         const parsed = parser.parseFromString(html, 'text/html');
         const styleTag = parsed.querySelector('style');
@@ -2047,6 +2492,24 @@
         });
     });
 
+    [enterpriseCropNameInput, enterpriseRegionInput].forEach(input => {
+        input?.addEventListener('input', () => scheduleReferenceRefresh('enterprise', 'Enterprise'));
+        input?.addEventListener('blur', () => {
+            refreshReferenceData('enterprise', 'Enterprise').catch(() => {
+                renderRateHint('enterprise', 'Official mandi price could not be loaded right now.', 'warning');
+            });
+        });
+    });
+
+    [farmerCropNameInput, farmerRegionInput].forEach(input => {
+        input?.addEventListener('input', () => scheduleReferenceRefresh('farmer', 'Farmer'));
+        input?.addEventListener('blur', () => {
+            refreshReferenceData('farmer', 'Farmer').catch(() => {
+                renderRateHint('farmer', 'Official mandi price could not be loaded right now.', 'warning');
+            });
+        });
+    });
+
     applyCropPresetEnterprise.addEventListener('click', () => {
         if (activeCropPresetKey) {
             applyCropPreset(activeCropPresetKey, 'enterprise');
@@ -2085,10 +2548,16 @@
     updateRiskMap(initialMapPoints);
     renderHistory(initialRecentReports);
     updatePulseCharts(initialRecentReports);
-    fetchWeather(initialRecentReports[0]?.region || '');
+    repairStaticHindiCopy();
 
     applyCropPreset('rice', 'enterprise');
     applyCropPreset('wheat', 'farmer');
+    refreshReferenceData('enterprise', 'Enterprise').catch(() => {
+        renderRateHint('enterprise', 'Official mandi price could not be loaded right now.', 'warning');
+    });
+    refreshReferenceData('farmer', 'Farmer').catch(() => {
+        renderRateHint('farmer', 'Official mandi price could not be loaded right now.', 'warning');
+    });
 </script>
 </body>
 </html>
